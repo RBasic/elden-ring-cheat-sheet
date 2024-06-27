@@ -78,10 +78,7 @@ ROUNDTABLE HOLD
 
 Defeat Margit the Fell Omen
 Talk to Melina (optional)
-Give Roderika the Chrysalids' Memento
-Convince Hewg
-Return to Roderika
-Find Crimson Hood where Chrysalids' Memento was
+
 Talk to D
 Visit Gurranq at Bestial Sanctum and give Deathroots
 Let Fia hold you to receive Baldachin's Blessing
@@ -109,6 +106,10 @@ Use a Stonesword Key
 Unlock shortcut with the elevator
 Defeat the Grafted Scion
 Loot Chrysalid's Memento
+Give Roderika the Chrysalids' Memento
+Convince Hewg
+Return to Roderika
+Find Crimson Hood where Chrysalids' Memento was
 Loot Highland Axe
 Loot Mimic's Veil
 Defeat the Giant Troll
