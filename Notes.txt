@@ -78,7 +78,6 @@ ROUNDTABLE HOLD
 
 Defeat Margit the Fell Omen
 Talk to Melina (optional)
-
 Talk to D
 Visit Gurranq at Bestial Sanctum and give Deathroots
 Let Fia hold you to receive Baldachin's Blessing
@@ -141,6 +140,7 @@ Speak to Thops
 Obtain Academy Scroll
 Loot Glintstone Craftsman's Cookbook [1]
 Talk to the Nomadic Merchant
+Get Map fragment
 Loot Glintstone Craftsman's Cookbook [2] 
 Loot Ritual Pot
 Loot Wraith Calling Bell
