@@ -16,3 +16,36 @@ th { text-align: left;}
 ul {
     list-style-type: none;
 }
+
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+h1 {
+    color: #ffcc00;
+}
+
+p {
+    color: #cccccc;
+}
+
+.head-dark-mode {
+    background-color: #333333;
+    color: #ffffff;
+    padding: 10px;
+    border-bottom: 1px solid #666666;
+    font-family: Arial, sans-serif;
+}
+
+    .head-dark-mode h1 {
+        color: #ffcc00;
+        font-size: 24px;
+        margin: 0;
+    }
+
+    .head-dark-mode p {
+        color: #cccccc;
+        font-size: 14px;
+        margin: 0;
+    }
