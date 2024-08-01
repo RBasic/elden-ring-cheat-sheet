@@ -244,13 +244,13 @@ Go back to Eastern Liurnia Lake Shore and then Ainsel River Well
 
 AINSEL RIVER (UNDERGROUND)
 
-Keep forward and find the secret path to Wing of Astel weapon
 Kill Malformed Star
 Loot Map (Ainsel River)
 Talk to the Nomadic Merchant
 Loot Immunizing Horn Charm
 Kill Dragonkin Soldier of Nokstella 
 Loot Frozen Lightning Spear
+Loot Great Ghost Glovewort
 
 LIURNIA OF THE LAKES (WEST)
 
