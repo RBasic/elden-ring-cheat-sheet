@@ -634,10 +634,10 @@ li.choice.is-notpicked > label.checkbox,
 li.choice.is-notpicked > label.checkbox a {
     color: var(--danger-fg);
 }
-li.choice.is-notpicked > label.checkbox {
+li.choice.is-notpicked > label.checkbox { opacity: 0.75; }
+li.choice.is-notpicked > label.checkbox > .checkbox-text {
     text-decoration: line-through;
     text-decoration-color: var(--danger);
-    opacity: 0.75;
 }
 li.choice.is-notpicked > label.checkbox > input[type="checkbox"] {
     border-color: var(--danger-fg);
@@ -658,6 +658,9 @@ label.checkbox {
     transition: background 0.12s ease, opacity 0.12s ease;
 }
 label.checkbox:hover { background: var(--hover); }
+
+/* the label text is one flex item so an inline <a> can't break it into columns */
+label.checkbox > .checkbox-text { flex: 1 1 auto; min-width: 0; }
 
 label.checkbox input[type="checkbox"] {
     appearance: none;
@@ -694,9 +697,11 @@ label.checkbox input[type="checkbox"]:checked::after {
 /* completed row: fade + strike the text, keep the tick crisp */
 li[data-id]:has(> label.checkbox > input:checked) > label.checkbox {
     color: var(--text-dim);
+    opacity: 0.65;
+}
+li[data-id]:has(> label.checkbox > input:checked) > label.checkbox > .checkbox-text {
     text-decoration: line-through;
     text-decoration-color: var(--strike);
-    opacity: 0.65;
 }
 li[data-id]:has(> label.checkbox > input:checked) > label.checkbox:hover {
     opacity: 0.9;
