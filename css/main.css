@@ -1,51 +1,418 @@
-html { overflow-y:scroll; }
-table { width: 100%; }
-th { text-align: left;}
-.table-striped tbody tr:nth-child(odd) td, .table-striped tbody tr:nth-child(odd) th { background-color: #E9E9E9;}
-.in_progress { color: #CC6600; }
-.done { color: #009933; }
+/* =========================================================================
+   Elden Ring Cheat Sheet — theme (redesign, phase 1)
+   Overrides Bootstrap 2.1.1. No HTML/JS changes required.
+   ========================================================================= */
 
-@media print {
-    body { color: #000; }
-    .navbar, #intro, input[type="checkbox"], .done, .in_progress { display: none; }
-    a { color: #000; text-decoration: underline; }
-    .tab-content > .tab-pane, .pill-content > .pill-pane { display: block; }
-    .tab-pane { page-break-after: always; }
+:root {
+    --bg:            #333129;   /* warm charcoal-brown page background */
+    --bg-raised:     #3b3931;   /* cards / raised surfaces */
+    --bg-sunken:     rgba(0, 5, 13, 0.35);
+    --text:          #f0e6d2;   /* warm off-white — body copy */
+    --text-dim:      #b3a98f;   /* secondary text, labels */
+    --heading:       #ffd119;   /* vivid gold — headings */
+    --accent:        #ffab19;   /* amber — level / upgrade pills */
+    --link:          #4fc3ff;   /* sky blue — links */
+    --link-hover:    #8fdcff;
+    --done:          #45e56d;   /* green — completion */
+    --border:        rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 209, 25, 0.35);
+    --container:     880px;
+    --radius:        8px;
 }
 
-ul {
-    list-style-type: none;
-}
+/* ----- base ------------------------------------------------------------- */
 
+html { overflow-y: scroll; background: var(--bg); }
+
+body,
 body.dark-mode {
-    background-color: #1a1a1a;
-    color: #ffffff;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: var(--container);
+    width: auto;
+    margin: 0 auto;
+    padding: 0 20px 96px;
+}
+
+a {
+    color: var(--link);
+    text-decoration: none;
+}
+a:hover,
+a:focus {
+    color: var(--link-hover);
+    text-decoration: underline;
+}
+/* external-link affordance */
+a[target="_blank"]::after {
+    content: " \2197";
+    font-size: 0.85em;
+    opacity: 0.45;
+}
+
+::selection { background: rgba(255, 209, 25, 0.25); }
+
+:focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+/* ----- headings ------------------------------------------------------------ */
+
+h1, h2, h3, h4 {
+    color: var(--heading);
+    font-weight: 300;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
 }
 
 h1 {
-    color: #ffcc00;
+    color: var(--heading);
+    font-size: 30px;
+    margin: 0;
 }
 
-p {
-    color: #cccccc;
+h2 {
+    font-size: 24px;
+    margin: 0 0 1.25rem;
 }
 
-.head-dark-mode {
-    background-color: #333333;
-    color: #ffffff;
-    padding: 10px;
-    border-bottom: 1px solid #666666;
-    font-family: Arial, sans-serif;
+h3 { font-size: 21px; font-weight: 400; margin: 1.5rem 0 0.5rem; }
+h3 > a:hover { color: #fff; }
+
+/* region titles (Playthrough tab only) */
+#tabPlaythrough h3 {
+    margin: 3rem 0 0.35rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-strong);
+    scroll-margin-top: 1.25rem;
+}
+#tabPlaythrough h3 > a { color: var(--heading); }
+
+/* "Recomendations:" label + the loose Level/Upgrades line that follows it
+   (their original HTML puts <h4> inside <p>, so the browser splits them into
+   siblings of #tabPlaythrough — we style them as one meta strip) */
+#tabPlaythrough > p:empty { display: none; }
+
+#tabPlaythrough > h4 {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0.85rem 0 0.15rem;
+}
+/* the value line: "<strong>Level:</strong> 1 ~ 10 <strong>Upgrades:</strong> …" */
+#tabPlaythrough > h4 + strong,
+#tabPlaythrough > strong,
+#tabPlaythrough > div > strong {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    margin-left: 0.15rem;
+}
+#tabPlaythrough > div {
+    color: var(--text-dim);
+    font-size: 13px;
 }
 
-    .head-dark-mode h1 {
-        color: #ffcc00;
-        font-size: 24px;
-        margin: 0;
-    }
+h4 {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0.75rem 0 0.25rem;
+}
 
-    .head-dark-mode p {
-        color: #cccccc;
-        font-size: 14px;
-        margin: 0;
-    }
+p { color: var(--text); }
+
+/* ----- top bar / navbar ------------------------------------------------- */
+
+.navbar { margin: 0 0 1.5rem; }
+
+.navbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    min-height: 0;
+    padding: 1.25rem 0 0.75rem;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+    filter: none;
+}
+
+.navbar .nav-tabs {
+    margin: 0;
+    border: 0;
+    flex: 1 1 auto;
+}
+.navbar .nav-tabs > li { float: none; display: inline-block; margin: 0; }
+.navbar .nav-tabs > li > a {
+    padding: 4px 12px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--text-dim);
+    background: none;
+    line-height: 1.5;
+}
+.navbar .nav-tabs > li > a:hover {
+    color: var(--heading);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: transparent;
+}
+.navbar .nav-tabs > li.active > a,
+.navbar .nav-tabs > li.active > a:hover,
+.navbar .nav-tabs > li.active > a:focus {
+    color: var(--bg);
+    background: var(--heading);
+    border-color: var(--heading);
+}
+
+/* ----- profile selector ---------------------------------------------------- */
+
+.profile { float: none !important; margin-left: auto; }
+.profile .input-append { display: inline-flex; gap: 6px; margin: 0; }
+
+#profiles,
+.profile select {
+    height: auto;
+    margin: 0;
+    padding: 5px 8px;
+    background: var(--bg-raised);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.btn {
+    padding: 5px 12px;
+    background: var(--bg-raised);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    text-shadow: none;
+    box-shadow: none;
+    background-image: none;
+    font-size: 14px;
+}
+.btn:hover { background: #48453b; color: var(--heading); }
+.btn-primary {
+    background: var(--heading);
+    border-color: var(--heading);
+    color: var(--bg);
+    font-weight: 600;
+}
+.btn-primary:hover { background: #ffdd4d; color: var(--bg); }
+.btn-danger {
+    background: #c0392b;
+    border-color: #c0392b;
+    color: #fff;
+}
+
+/* ----- table of contents (first list in the Playthrough tab) ----------- */
+
+#tabPlaythrough > ul:first-of-type {
+    margin: 0 0 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    columns: 2;
+    column-gap: 2rem;
+}
+#tabPlaythrough > ul:first-of-type > li {
+    break-inside: avoid;
+    padding: 3px 0;
+    line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+    #tabPlaythrough > ul:first-of-type { columns: 1; }
+}
+
+/* ----- checklist lists --------------------------------------------------- */
+
+ul { list-style-type: none; margin-left: 0; }
+
+#tabPlaythrough > ul:not(:first-of-type) {
+    margin: 0 0 0.5rem;
+    padding: 0;
+}
+
+/* a checklist row */
+li[data-id] {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+}
+li[data-id]:last-child { border-bottom: 0; }
+
+/* nested sub-items */
+li[data-id] li[data-id] {
+    margin-left: 1.75rem;
+    border-bottom: 0;
+}
+
+/* ----- custom checkboxes (label.checkbox is injected by main.js) ------- */
+
+label.checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0.5rem 0.4rem;
+    min-height: 40px;
+    text-indent: 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.12s ease, opacity 0.12s ease;
+}
+label.checkbox:hover { background: rgba(255, 255, 255, 0.04); }
+
+label.checkbox input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin: 0.18rem 0 0;
+    float: none;
+    position: relative;
+    border: 2px solid rgba(178, 146, 18, 0.5);
+    border-radius: 4px;
+    background: var(--bg-sunken);
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+}
+label.checkbox input[type="checkbox"]:hover { border-color: var(--accent); }
+label.checkbox input[type="checkbox"]:checked {
+    border-color: var(--heading);
+    background: rgba(255, 209, 25, 0.16);
+}
+label.checkbox input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--heading);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* completed row: fade + strike the text, keep the tick crisp */
+li[data-id]:has(> label.checkbox > input:checked) > label.checkbox {
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 255, 255, 0.25);
+    opacity: 0.65;
+}
+li[data-id]:has(> label.checkbox > input:checked) > label.checkbox:hover {
+    opacity: 0.9;
+}
+li[data-id]:has(> label.checkbox > input:checked) label.checkbox a {
+    color: var(--text-dim);
+}
+
+/* ----- progress badges (main.js writes "[x/y]" / "[DONE]") ------------- */
+
+span[id*="_totals_"],
+span[id*="_overall_total"] {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 1px 8px;
+    border-radius: 999px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.in_progress {
+    color: var(--accent);
+    border: 2px dotted rgba(255, 171, 25, 0.5);
+    background: none;
+}
+.done {
+    color: var(--done);
+    border: 2px dotted rgba(69, 229, 109, 0.5);
+    background: none;
+}
+/* overall total sits next to the H2 */
+#playthrough_overall_total { font-size: 13px; }
+
+/* ----- modal (profile add/edit) --------------------------------------- */
+
+.modal {
+    background: var(--bg-raised);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.modal-header {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+}
+.modal-header h3 { margin: 0; border: 0; padding: 0; }
+.modal-header .close {
+    color: var(--text-dim);
+    text-shadow: none;
+    opacity: 0.8;
+}
+.modal-body { padding: 18px; }
+.modal-body input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    background: var(--bg-sunken);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+.modal-body .control-label { color: var(--text-dim); }
+.modal-footer {
+    background: none;
+    border-top: 1px solid var(--border);
+    box-shadow: none;
+    padding: 14px 18px;
+}
+.modal-backdrop,
+.modal-backdrop.fade.in { opacity: 0.7; }
+
+/* ----- misc legacy ---------------------------------------------------- */
+
+table { width: 100%; }
+th { text-align: left; }
+.table-striped tbody tr:nth-child(odd) td,
+.table-striped tbody tr:nth-child(odd) th { background-color: #2b2922; }
+
+/* ----- print -------------------------------------------------------------- */
+
+@media print {
+    html, body, body.dark-mode { background: #fff; color: #000; }
+    .navbar, #intro, input[type="checkbox"], .done, .in_progress { display: none; }
+    .container { max-width: none; padding: 0; }
+    a { color: #000; text-decoration: underline; }
+    a[target="_blank"]::after { content: ""; }
+    label.checkbox { min-height: 0; padding: 2px 0; }
+    li[data-id]:has(> label.checkbox > input:checked) > label.checkbox { opacity: 1; }
+    .tab-content > .tab-pane, .pill-content > .pill-pane { display: block; }
+    .tab-pane { page-break-after: always; }
+}
