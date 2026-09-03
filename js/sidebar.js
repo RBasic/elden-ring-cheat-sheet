@@ -23,22 +23,52 @@
         return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/[^\w-]/g, '\\$&');
     }
 
-    // --- progress backup (jStorage blob) --------------------------------
+    // --- progress backup (download / restore a save file) --------------
     var STORAGE = 'jStorage';
     function readProgress() {
         try { return localStorage.getItem(STORAGE) || ''; } catch (e) { return ''; }
     }
-    // done('ok' | 'empty' | 'manual', data)
-    function copyProgress(done) {
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
+    // returns true if a download was started, false if there was nothing to save
+    function downloadProgress() {
         var data = readProgress();
-        if (!data) { done('empty', ''); return; }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(data).then(
-                function () { done('ok', data); },
-                function () { done('manual', data); }
-            );
+        if (!data) { return false; }
+        var d = new Date();
+        var name = 'elden-ring-save-' + d.getFullYear() + '-' +
+            pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + '.txt';
+        var url = URL.createObjectURL(new Blob([data], { type: 'text/plain' }));
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        return true;
+    }
+    // validate a save string and apply it (then reload). msg(text) reports status.
+    function restoreProgress(raw, msg) {
+        raw = (raw || '').trim();
+        if (!raw) { msg('Fichier vide.'); return; }
+        var parsed;
+        try { parsed = JSON.parse(raw); }
+        catch (e) { msg('Fichier illisible (JSON invalide).'); return; }
+        if (!parsed || typeof parsed !== 'object' || !parsed.elden_ring_profiles) {
+            msg('Ce fichier n’est pas une sauvegarde valide.'); return;
+        }
+        try { localStorage.setItem(STORAGE, raw); }
+        catch (e) { msg('Écriture impossible (stockage plein ou bloqué).'); return; }
+        msg('✓ Restauré — rechargement…');
+        setTimeout(function () { location.reload(); }, 700);
+    }
+    function readFile(file, msg, onText) {
+        if (file.text) {
+            file.text().then(onText, function () { msg('Lecture du fichier impossible.'); });
         } else {
-            done('manual', data);
+            var fr = new FileReader();
+            fr.onload = function () { onText(String(fr.result)); };
+            fr.onerror = function () { msg('Lecture du fichier impossible.'); };
+            fr.readAsText(file);
         }
     }
 
@@ -232,17 +262,14 @@
     });
     refreshCollapseAllLabel();
 
-    // quick "copy my progress" button, always reachable in the sticky toolbar
+    // quick "save my progress to a file" button, always reachable in the toolbar
     var backupBtn = document.getElementById('erBackup');
     var backupTimer;
     backupBtn.addEventListener('click', function () {
-        copyProgress(function (status) {
-            clearTimeout(backupTimer);
-            backupBtn.dataset.flash =
-                status === 'ok' ? '✓ Copié' :
-                status === 'empty' ? 'Rien à copier' : 'Onglet Help ↗';
-            backupTimer = setTimeout(function () { delete backupBtn.dataset.flash; }, 1800);
-        });
+        var ok = downloadProgress();
+        clearTimeout(backupTimer);
+        backupBtn.dataset.flash = ok ? '✓ Fichier' : 'Rien à sauver';
+        backupTimer = setTimeout(function () { delete backupBtn.dataset.flash; }, 1800);
     });
 
     /* ------------------------------------------------------------------ *
@@ -383,53 +410,32 @@
         box.className = 'er-backup';
         box.innerHTML =
             '<h3>Sauvegarder / restaurer ma progression</h3>' +
-            '<p>La progression est stockée uniquement dans ce navigateur. Copie ce texte ' +
-            'pour la garder ailleurs, ou colle une sauvegarde pour la restaurer ' +
-            '(remplace la progression actuelle).</p>' +
+            '<p>La progression est stockée uniquement dans ce navigateur. Télécharge un ' +
+            'fichier de sauvegarde pour la garder ailleurs, ou importe-le pour la ' +
+            'restaurer (remplace la progression actuelle).</p>' +
             '<div class="er-backup-row">' +
-                '<button type="button" id="erExport">Copier ma progression</button>' +
-                '<span id="erExportMsg" role="status"></span>' +
-            '</div>' +
-            '<textarea id="erImportBox" rows="4" spellcheck="false" ' +
-                'placeholder="Colle ici une sauvegarde JSON…"></textarea>' +
-            '<div class="er-backup-row">' +
-                '<button type="button" id="erImport">Restaurer depuis le texte</button>' +
-                '<span id="erImportMsg" role="status"></span>' +
+                '<button type="button" id="erExport">Télécharger ma progression</button>' +
+                '<label class="er-filebtn">Restaurer depuis un fichier…' +
+                    '<input type="file" id="erImportFile" ' +
+                    'accept=".txt,.json,application/json,text/plain"></label>' +
+                '<span id="erBackupMsg" role="status"></span>' +
             '</div>';
         help.appendChild(box);
 
         var exportBtn = document.getElementById('erExport');
-        var importBtn = document.getElementById('erImport');
-        var importBox = document.getElementById('erImportBox');
-        var exportMsg = document.getElementById('erExportMsg');
-        var importMsg = document.getElementById('erImportMsg');
+        var importFile = document.getElementById('erImportFile');
+        var backupMsg = document.getElementById('erBackupMsg');
+        function setMsg(t) { backupMsg.textContent = t; }
 
         exportBtn.addEventListener('click', function () {
-            copyProgress(function (status, data) {
-                if (status === 'ok') {
-                    exportMsg.textContent = '✓ Copié dans le presse-papier.';
-                } else if (status === 'empty') {
-                    exportMsg.textContent = 'Rien à exporter pour le moment.';
-                } else {
-                    importBox.value = data; importBox.select();
-                    exportMsg.textContent = 'Copie auto impossible — sélectionné ci-dessous, fais Ctrl+C.';
-                }
-            });
+            setMsg(downloadProgress() ? '✓ Fichier téléchargé.' : 'Rien à sauvegarder pour le moment.');
         });
 
-        importBtn.addEventListener('click', function () {
-            var raw = importBox.value.trim();
-            if (!raw) { importMsg.textContent = 'Colle d’abord une sauvegarde.'; return; }
-            var parsed;
-            try { parsed = JSON.parse(raw); } catch (e) { importMsg.textContent = 'JSON invalide.'; return; }
-            if (!parsed || typeof parsed !== 'object' || !parsed.elden_ring_profiles) {
-                importMsg.textContent = 'Ce texte ne ressemble pas à une sauvegarde valide.';
-                return;
-            }
-            try { localStorage.setItem(STORAGE, raw); }
-            catch (e) { importMsg.textContent = 'Écriture impossible (stockage plein ou bloqué).'; return; }
-            importMsg.textContent = '✓ Restauré — rechargement…';
-            setTimeout(function () { location.reload(); }, 700);
+        importFile.addEventListener('change', function () {
+            var file = importFile.files && importFile.files[0];
+            importFile.value = '';   // let the same file be picked again
+            if (!file) { return; }
+            readFile(file, setMsg, function (text) { restoreProgress(text, setMsg); });
         });
     }
 })();
