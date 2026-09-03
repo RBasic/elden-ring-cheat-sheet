@@ -138,13 +138,17 @@ h3 { font-size: 21px; font-weight: 400; margin: 1.5rem 0 0.5rem; }
 h3 > a:hover { color: var(--heading-hover); }
 
 /* region titles (Playthrough tab only) */
-#tabPlaythrough h3 { margin: 0; padding: 0; border: 0; scroll-margin-top: calc(var(--toolbar-h, 6.5rem) + 0.75rem); }
-#tabPlaythrough h3 > a {
+#tabPlaythrough h3 {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    scroll-margin-top: calc(var(--toolbar-h, 6.5rem) + 0.75rem);
     color: var(--heading);
     font-family: var(--font-display);
     font-weight: 600;
     letter-spacing: 0.03em;
 }
+#tabPlaythrough h3 > a { color: inherit; }
 #tabPlaythrough h3:focus { outline: none; }
 #tabPlaythrough h3:focus-visible { outline: 2px solid var(--link); outline-offset: 4px; border-radius: 4px; }
 
