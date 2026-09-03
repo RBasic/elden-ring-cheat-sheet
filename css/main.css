@@ -616,6 +616,42 @@ li[data-id] li[data-id] {
     border-bottom: 0;
 }
 
+/* ----- "pick one" choice groups ------------------------------------- */
+
+/* the "Two choices here:" line — a label, not a task */
+li.choice-head { border-bottom: 0; }
+li.choice-head > label.checkbox {
+    cursor: default;
+    min-height: 0;
+    gap: 0;
+    padding: 0.9rem 0.4rem 0.1rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+li.choice-head > label.checkbox:hover { background: none; }
+li.choice-head > label.checkbox > input { display: none; }
+
+/* the options themselves, indented under the header */
+li.choice { margin-left: 1.75rem; }
+li.choice + li.choice { border-top: 1px solid var(--border); }
+
+/* the option you didn't take, once the other is picked */
+li.choice.is-notpicked > label.checkbox,
+li.choice.is-notpicked > label.checkbox a {
+    color: var(--danger-fg);
+}
+li.choice.is-notpicked > label.checkbox {
+    text-decoration: line-through;
+    text-decoration-color: var(--danger);
+    opacity: 0.75;
+}
+li.choice.is-notpicked > label.checkbox > input[type="checkbox"] {
+    border-color: var(--danger-fg);
+}
+
 /* ----- custom checkboxes (label.checkbox is injected by main.js) ------- */
 
 label.checkbox {

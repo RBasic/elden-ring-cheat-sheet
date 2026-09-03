@@ -258,6 +258,7 @@
             : p + '%';
         progWrap.setAttribute('aria-valuenow', p);
         progWrap.classList.toggle('is-done', p === 100);
+        refreshChoices();
     }
     if (overallSpan) {
         new MutationObserver(syncProgress).observe(overallSpan, {
@@ -265,6 +266,38 @@
         });
         syncProgress();
     }
+
+    /* mutually-exclusive "pick one" choice groups
+       (li.choice-head label + li.choice[data-choice-group] options) */
+    function refreshChoices() {
+        var groups = {};
+        Array.prototype.forEach.call(pane.querySelectorAll('li.choice[data-choice-group]'), function (li) {
+            (groups[li.dataset.choiceGroup] = groups[li.dataset.choiceGroup] || []).push(li);
+        });
+        Object.keys(groups).forEach(function (g) {
+            var members = groups[g];
+            var picked = members.filter(function (li) {
+                var cb = li.querySelector('input[type="checkbox"]');
+                return cb && cb.checked;
+            });
+            members.forEach(function (li) {
+                li.classList.toggle('is-notpicked', picked.length > 0 && picked.indexOf(li) === -1);
+            });
+        });
+    }
+    pane.addEventListener('change', function (e) {
+        var cb = e.target;
+        if (!cb || cb.type !== 'checkbox') { return; }
+        var li = cb.closest && cb.closest('li.choice[data-choice-group]');
+        if (li && cb.checked) {
+            var sel = 'li.choice[data-choice-group="' + esc(li.dataset.choiceGroup) +
+                '"] input[type="checkbox"]';
+            Array.prototype.forEach.call(pane.querySelectorAll(sel), function (other) {
+                if (other !== cb && other.checked) { other.click(); }   // toggle the other one off
+            });
+        }
+        refreshChoices();
+    });
 
     /* ------------------------------------------------------------------ *
      *  3. Collapse-all / expand-all

@@ -150,11 +150,27 @@
             $('[id^="' + type + '_totals_"]').each(function(index) {
                 var regex = new RegExp(type + '_totals_(.*)');
                 var i = parseInt(this.id.match(regex)[1]);
-                var count = 0, checked = 0;
+                var count = 0, checked = 0, countedGroups = {};
                 for (var j = 1; ; j++) {
                     var checkbox = $('#' + type + '_' + i + '_' + j);
                     if (checkbox.length == 0) {
                         break;
+                    }
+                    var li = checkbox.closest('li');
+                    if (li.hasClass('choice-head')) {
+                        continue;   // a "pick one of the following" label, not a task
+                    }
+                    var grp = li.attr('data-choice-group');
+                    if (grp) {
+                        if (countedGroups[grp]) { continue; }   // one exclusive group counts once
+                        countedGroups[grp] = true;
+                        count++;
+                        overallCount++;
+                        if ($('li[data-choice-group="' + grp + '"] input[type="checkbox"]:checked').length) {
+                            checked++;
+                            overallChecked++;
+                        }
+                        continue;
                     }
                     count++;
                     overallCount++;
