@@ -333,6 +333,26 @@ body.toc-open #tocToggle .toc-x { display: inline; }
     font-weight: 600;
 }
 
+.er-chips { gap: 0.4rem; flex-wrap: wrap; }
+.er-chip {
+    flex: 0 0 auto;
+    padding: 3px 11px;
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.er-chip:hover { color: var(--heading); }
+.er-chip.is-on {
+    color: var(--bg);
+    background: var(--heading);
+    border-color: var(--heading);
+    font-weight: 600;
+}
+
 .er-no-results {
     margin: 2rem 0;
     padding: 1rem;
@@ -687,7 +707,7 @@ th { text-align: left; }
     }
     .region.is-collapsed .region-body { display: block; }
     .region-head { cursor: auto; }
-    .region-collapse, .er-no-results, .er-backup { display: none; }
+    .region-collapse, .er-no-results, .er-backup, .er-chips { display: none; }
     a { color: #000; text-decoration: underline; }
     a[target="_blank"]::after { content: ""; }
     label.checkbox { min-height: 0; padding: 2px 0; }

@@ -74,6 +74,25 @@
         if (collapsed.has(h3.id)) { section.classList.add('is-collapsed'); }
     });
 
+    /* tag each task with a rough category for the filter chips */
+    function classify(text) {
+        var t = text.trim().toLowerCase();
+        if (/^(defeat|kill)\b/.test(t)) { return 'boss'; }
+        if (/^buy\b/.test(t)) { return 'shop'; }
+        if (/^complete\b/.test(t)) { return 'dungeon'; }
+        if (/^(talk to|speak|meet|give|report back|agree to serve|listen for)\b/.test(t)) { return 'npc'; }
+        if (/^(loot|obtain|grab|pick up|collect|get)\b/.test(t)) { return 'loot'; }
+        if (/^find\b/.test(t)) {
+            return /(talisman|ashes|\bset\b|cookbook|scroll|\bseed\b|stonesword key|\btear\b|painting|whetstone|medallion|bell bearing|prayerbook|scarab|glovewort|smithing stone|great rune|remembrance|larval|map fragment)/.test(t)
+                ? 'loot' : 'npc';
+        }
+        return null;
+    }
+    Array.prototype.forEach.call(pane.querySelectorAll('li[data-id]'), function (li) {
+        var ty = classify(li.textContent);
+        if (ty) { li.dataset.type = ty; }
+    });
+
     // put the region sections in the same order as the sidebar nav
     // (the source HTML has a few regions out of progression order)
     Array.prototype.forEach.call(sidebar.querySelectorAll('a[href^="#"]'), function (a) {
@@ -121,6 +140,14 @@
             '<input id="erFilter" type="search" placeholder="Filtrer les tâches…" autocomplete="off">' +
             '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
             '<button type="button" id="erCollapseAll">Tout replier</button>' +
+        '</div>' +
+        '<div class="er-row er-chips" role="group" aria-label="Filtrer par catégorie">' +
+            '<button type="button" class="er-chip is-on" data-type="">Tous</button>' +
+            '<button type="button" class="er-chip" data-type="boss">Boss</button>' +
+            '<button type="button" class="er-chip" data-type="dungeon">Donjons</button>' +
+            '<button type="button" class="er-chip" data-type="loot">Loot</button>' +
+            '<button type="button" class="er-chip" data-type="npc">PNJ</button>' +
+            '<button type="button" class="er-chip" data-type="shop">Achats</button>' +
         '</div>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
@@ -190,6 +217,8 @@
 
     var filterInput = document.getElementById('erFilter');
     var hideDoneBtn = document.getElementById('erHideDone');
+    var chipRow = toolbar.querySelector('.er-chips');
+    var typeFilter = '';
 
     function hideDoneOn() { return hideDoneBtn.getAttribute('aria-pressed') === 'true'; }
 
@@ -202,15 +231,17 @@
     function applyFilter() {
         var term = filterInput.value.trim().toLowerCase();
         var hideDone = hideDoneOn();
-        var anyActive = !!term || hideDone;
-        body.classList.toggle('er-filtering', !!term);   // only text search force-opens regions
+        var anyActive = !!term || hideDone || !!typeFilter;
+        // text search or a category chip force-opens the regions
+        body.classList.toggle('er-filtering', !!term || !!typeFilter);
         var totalVisible = 0;
         sections.forEach(function (section) {
             var visible = 0;
             topLevelItems(section).forEach(function (li) {
                 var matchText = !term || li.textContent.toLowerCase().indexOf(term) !== -1;
+                var matchType = !typeFilter || li.dataset.type === typeFilter;
                 var done = !!li.querySelector('input[type="checkbox"]:checked');
-                var show = matchText && !(hideDone && done);
+                var show = matchText && matchType && !(hideDone && done);
                 li.hidden = !show;
                 if (show) { visible++; }
             });
@@ -222,6 +253,16 @@
     filterInput.addEventListener('input', applyFilter);
     hideDoneBtn.addEventListener('click', function () {
         hideDoneBtn.setAttribute('aria-pressed', hideDoneOn() ? 'false' : 'true');
+        applyFilter();
+    });
+    chipRow.addEventListener('click', function (e) {
+        var chip = e.target.closest('.er-chip');
+        if (!chip) { return; }
+        typeFilter = chip.dataset.type;
+        Array.prototype.forEach.call(chipRow.querySelectorAll('.er-chip'), function (c) {
+            c.classList.toggle('is-on', c === chip);
+            c.setAttribute('aria-pressed', c === chip ? 'true' : 'false');
+        });
         applyFilter();
     });
     document.addEventListener('change', function (e) {
