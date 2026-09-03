@@ -307,9 +307,16 @@
 
     // "Reset" — clear every check in the current profile only
     var resetBtn = document.getElementById('profileReset');
+    var profileSelect = document.getElementById('profiles');
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-            if (!window.confirm('Tout décocher dans ce profil ?\n(les autres profils ne sont pas touchés)')) { return; }
+            var name = (profileSelect && profileSelect.value) || 'ce profil';
+            if (!window.confirm(
+                '⚠ Réinitialiser la progression\n\n' +
+                'Toutes les cases du profil « ' + name + ' » vont être décochées. ' +
+                'Cette action est irréversible (pense à Sauvegarder d’abord).\n\n' +
+                'Les autres profils ne sont pas touchés.'
+            )) { return; }
             try {
                 var js = JSON.parse(localStorage.getItem(STORAGE) || 'null');
                 var p = js && js.elden_ring_profiles;

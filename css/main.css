@@ -206,6 +206,20 @@ p { color: var(--text); }
     color: #fff;
 }
 
+/* Reset = destructive: danger-outline that fills solid red on hover/focus */
+#profileReset {
+    color: #ff8a7a;
+    background: rgba(192, 57, 43, 0.14);
+    border-color: rgba(255, 138, 122, 0.55);
+    font-weight: 600;
+}
+#profileReset:hover,
+#profileReset:focus-visible {
+    color: #fff;
+    background: #c0392b;
+    border-color: #c0392b;
+}
+
 /* ----- sticky toolbar ------------------------------------------------- */
 
 /* Bootstrap sets .tab-content{overflow:auto} which breaks position:sticky */
