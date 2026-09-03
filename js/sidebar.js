@@ -42,6 +42,13 @@
         bodyWrap.className = 'region-body';
 
         h3.parentNode.insertBefore(section, h3);
+
+        var cbtn = document.createElement('button');
+        cbtn.type = 'button';
+        cbtn.className = 'region-collapse';
+        cbtn.setAttribute('aria-label', 'Replier ou déplier cette région');
+        cbtn.setAttribute('aria-expanded', collapsed.has(h3.id) ? 'false' : 'true');
+        head.appendChild(cbtn);
         head.appendChild(h3);
 
         var wikiSrc = h3.querySelector('a[href]');
@@ -73,6 +80,8 @@
 
     function setCollapsed(section, state) {
         section.classList.toggle('is-collapsed', state);
+        var cbtn = section.querySelector('.region-collapse');
+        if (cbtn) { cbtn.setAttribute('aria-expanded', state ? 'false' : 'true'); }
         if (state) { collapsed.add(section.dataset.region); }
         else { collapsed.delete(section.dataset.region); }
     }
@@ -95,17 +104,24 @@
     toolbar.id = 'erToolbar';
     toolbar.innerHTML =
         '<div class="er-row">' +
-            '<span class="er-progress" role="progressbar" aria-label="Overall completion">' +
+            '<span class="er-progress" role="progressbar" aria-label="Progression globale"' +
+                ' aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
                 '<span class="er-progress-fill"></span>' +
             '</span>' +
             '<span class="er-progress-pct">0%</span>' +
         '</div>' +
         '<div class="er-row">' +
             '<input id="erFilter" type="search" placeholder="Filtrer les tâches…" autocomplete="off">' +
-            '<label class="er-check"><input type="checkbox" id="erHideDone"> Masquer les faits</label>' +
+            '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
             '<button type="button" id="erCollapseAll">Tout replier</button>' +
         '</div>';
     pane.insertBefore(toolbar, pane.firstChild);
+
+    var noResults = document.createElement('p');
+    noResults.className = 'er-no-results';
+    noResults.textContent = 'Aucune tâche ne correspond à ce filtre.';
+    noResults.hidden = true;
+    pane.appendChild(noResults);
     // move the existing sidebar toggle into the toolbar
     toolbar.querySelector('.er-row').insertBefore(toggle, toolbar.querySelector('.er-progress'));
 
@@ -119,6 +135,7 @@
         var p = t === 'DONE' ? 100 : (parseInt(t, 10) || 0);
         progFill.style.width = p + '%';
         progPct.textContent = p + '%';
+        progWrap.setAttribute('aria-valuenow', p);
         progWrap.classList.toggle('is-done', p === 100);
     }
     if (overallSpan) {
@@ -150,7 +167,9 @@
      * ------------------------------------------------------------------ */
 
     var filterInput = document.getElementById('erFilter');
-    var hideDoneCb = document.getElementById('erHideDone');
+    var hideDoneBtn = document.getElementById('erHideDone');
+
+    function hideDoneOn() { return hideDoneBtn.getAttribute('aria-pressed') === 'true'; }
 
     function topLevelItems(section) {
         return Array.prototype.slice.call(section.querySelectorAll('li[data-id]')).filter(function (li) {
@@ -160,8 +179,10 @@
 
     function applyFilter() {
         var term = filterInput.value.trim().toLowerCase();
-        var hideDone = hideDoneCb.checked;
-        body.classList.toggle('er-filtering', !!term || hideDone);
+        var hideDone = hideDoneOn();
+        var anyActive = !!term || hideDone;
+        body.classList.toggle('er-filtering', !!term);   // only text search force-opens regions
+        var totalVisible = 0;
         sections.forEach(function (section) {
             var visible = 0;
             topLevelItems(section).forEach(function (li) {
@@ -171,14 +192,19 @@
                 li.hidden = !show;
                 if (show) { visible++; }
             });
-            section.hidden = visible === 0;
+            section.hidden = anyActive && visible === 0;
+            totalVisible += visible;
         });
+        noResults.hidden = !(anyActive && totalVisible === 0);
     }
     filterInput.addEventListener('input', applyFilter);
-    hideDoneCb.addEventListener('change', applyFilter);
+    hideDoneBtn.addEventListener('click', function () {
+        hideDoneBtn.setAttribute('aria-pressed', hideDoneOn() ? 'false' : 'true');
+        applyFilter();
+    });
     document.addEventListener('change', function (e) {
-        if (e.target && e.target.matches && e.target.matches('#tabPlaythrough input[type="checkbox"]')) {
-            if (hideDoneCb.checked) { applyFilter(); }
+        if (e.target && e.target.matches && e.target.matches('#tabPlaythrough li[data-id] input[type="checkbox"]')) {
+            if (hideDoneOn()) { applyFilter(); }
         }
     });
 
