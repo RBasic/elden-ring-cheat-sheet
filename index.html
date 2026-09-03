@@ -29,6 +29,12 @@
         <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TNBWBHHZ" height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
     <!-- End Google Tag Manager (noscript) -->
+    <button type="button" id="tocToggle" aria-controls="tocSidebar" aria-expanded="false">
+        <span class="toc-burger" aria-hidden="true">&#9776;</span><span class="toc-x" aria-hidden="true">&times;</span>
+        <span>Regions</span>
+    </button>
+    <div id="tocOverlay" hidden></div>
+
     <div class="container">
         <div class="navbar">
             <div class="navbar-inner">
@@ -52,6 +58,8 @@
         <div class="tab-content">
             <div class="tab-pane active" id="tabPlaythrough">
                 <h2>Playthrough Checklist <span id="playthrough_overall_total"></span></h2>
+                <nav id="tocSidebar" aria-label="Playthrough regions">
+                <span class="toc-title">Regions</span>
                 <ul>
                     <li><a href="#West_Limgrave">West Limgrave</a> <span id="playthrough_nav_totals_1"></span></li>
                     <li><a href="#East_Limgrave_Mistwood">East Limgrave & Mistwood</a> <span id="playthrough_nav_totals_2"></span></li>
@@ -82,6 +90,7 @@
                     <li><a href="#Subterranean_Shunning_Grounds">Subterranean Shunning-Grounds</a> <span id="playthrough_nav_totals_27"></span></li>
                     <li><a href="#Endings">Endings</a> <span id="playthrough_nav_totals_28"></span></li>
                 </ul>
+                </nav>
 
                 <h3 id="West_Limgrave"><a href="https://eldenring.wiki.fextralife.com/Limgrave" target="_blank">West Limgrave</a> <span id="playthrough_totals_1"></span></h3>
                 <p>
@@ -1409,5 +1418,7 @@
             <a href="#" id="profileModalDelete" class="btn btn-danger">Delete</a>
         </div>
     </div>
+
+    <script src="js/sidebar.js"></script>
 </body>
 </html>

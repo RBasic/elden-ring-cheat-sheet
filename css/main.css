@@ -95,7 +95,7 @@ h3 > a:hover { color: #fff; }
     margin: 3rem 0 0.35rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-strong);
-    scroll-margin-top: 1.25rem;
+    scroll-margin-top: 3.75rem;
 }
 #tabPlaythrough h3 > a { color: var(--heading); }
 
@@ -149,7 +149,7 @@ p { color: var(--text); }
     align-items: center;
     gap: 0.75rem 1.25rem;
     min-height: 0;
-    padding: 1.25rem 0 0.75rem;
+    padding: 3.25rem 0 0.75rem;
     background: none;
     border: 0;
     border-bottom: 1px solid var(--border);
@@ -227,32 +227,113 @@ p { color: var(--text); }
     color: #fff;
 }
 
-/* ----- table of contents (first list in the Playthrough tab) ----------- */
+/* ----- collapsible region sidebar (table of contents) ----------------- */
 
-#tabPlaythrough > ul:first-of-type {
-    margin: 0 0 1rem;
-    padding: 1rem 1.25rem;
+#tocToggle {
+    position: fixed;
+    top: 0.7rem;
+    left: 0.7rem;
+    z-index: 1002;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 7px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--bg);
+    background: var(--heading);
+    border: 1px solid var(--heading);
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+}
+#tocToggle:hover { background: #ffdd4d; }
+#tocToggle .toc-x { display: none; }
+body.toc-open #tocToggle .toc-burger { display: none; }
+body.toc-open #tocToggle .toc-x { display: inline; }
+
+#tocOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+body.toc-open #tocOverlay { opacity: 1; visibility: visible; }
+@media (min-width: 1000px) { #tocOverlay { background: rgba(0, 0, 0, 0.28); } }
+
+#tocSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    height: 100dvh;
+    width: 310px;
+    max-width: 86vw;
+    z-index: 1001;
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
     background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    columns: 2;
-    column-gap: 2rem;
+    border-right: 1px solid var(--border-strong);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 3.75rem 0.9rem 2rem;
 }
-#tabPlaythrough > ul:first-of-type > li {
-    break-inside: avoid;
-    padding: 3px 0;
-    line-height: 1.5;
+body.toc-open #tocSidebar { transform: translateX(0); }
+
+#tocSidebar .toc-title {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0 0.5rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.4rem;
 }
 
-@media (max-width: 620px) {
-    #tabPlaythrough > ul:first-of-type { columns: 1; }
+#tocSidebar ul { margin: 0; padding: 0; }
+#tocSidebar li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding: 0 0.5rem 0 0.5rem;
+    border: 0;
+    line-height: 1.35;
+    border-radius: 6px;
 }
+#tocSidebar li > a {
+    flex: 1 1 auto;
+    padding: 6px 0;
+    color: var(--link);
+}
+#tocSidebar li > a:hover { text-decoration: none; }
+#tocSidebar li:hover { background: rgba(255, 255, 255, 0.05); }
+#tocSidebar li.toc-current { background: rgba(255, 209, 25, 0.12); }
+#tocSidebar li.toc-current > a { color: var(--heading); }
+#tocSidebar li > span[id] {
+    flex: 0 0 auto;
+    font-size: 10.5px;
+    padding: 0 5px;
+}
+
+body.toc-hidden #tocToggle,
+body.toc-hidden #tocSidebar,
+body.toc-hidden #tocOverlay { display: none; }
+
+/* keep page content clear of the fixed toggle button */
+body.toc-hidden .navbar-inner { padding-top: 1.25rem; }
 
 /* ----- checklist lists --------------------------------------------------- */
 
 ul { list-style-type: none; margin-left: 0; }
 
-#tabPlaythrough > ul:not(:first-of-type) {
+#tabPlaythrough > ul {
     margin: 0 0 0.5rem;
     padding: 0;
 }
@@ -407,8 +488,13 @@ th { text-align: left; }
 
 @media print {
     html, body, body.dark-mode { background: #fff; color: #000; }
-    .navbar, #intro, input[type="checkbox"], .done, .in_progress { display: none; }
+    .navbar, #intro, input[type="checkbox"], .done, .in_progress,
+    #tocToggle, #tocOverlay { display: none; }
     .container { max-width: none; padding: 0; }
+    #tocSidebar {
+        position: static; transform: none; width: auto; height: auto;
+        box-shadow: none; border: 0; padding: 0; overflow: visible;
+    }
     a { color: #000; text-decoration: underline; }
     a[target="_blank"]::after { content: ""; }
     label.checkbox { min-height: 0; padding: 2px 0; }
