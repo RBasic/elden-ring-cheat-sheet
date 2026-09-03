@@ -102,18 +102,6 @@
         head.appendChild(cbtn);
         head.appendChild(h3);
 
-        var wikiSrc = h3.querySelector('a[href]');
-        if (wikiSrc && wikiSrc.getAttribute('href')) {
-            var wiki = document.createElement('a');
-            wiki.className = 'region-wiki';
-            wiki.href = wikiSrc.href;
-            wiki.target = '_blank';
-            wiki.rel = 'noopener';
-            wiki.textContent = '↗';
-            wiki.setAttribute('aria-label', 'Open wiki page');
-            head.appendChild(wiki);
-        }
-
         section.appendChild(head);
         section.appendChild(bodyWrap);
 
@@ -171,8 +159,6 @@
     pane.addEventListener('click', function (e) {
         var head = e.target.closest('.region-head');
         if (!head) { return; }
-        if (e.target.closest('a.region-wiki')) { return; }   // real wiki link works
-        if (e.target.closest('a')) { e.preventDefault(); }    // title link toggles instead
         var section = head.closest('.region');
         setCollapsed(section, !section.classList.contains('is-collapsed'));
         persistCollapsed();
