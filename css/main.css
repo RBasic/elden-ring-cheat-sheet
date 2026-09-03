@@ -27,6 +27,15 @@
     --shadow:        rgba(0, 0, 0, 0.5);
     --container:     880px;
     --radius:        8px;
+    --font-display:  "Cinzel", "Trajan Pro", Optima, Georgia, "Times New Roman", serif;
+}
+
+/* self-hosted display face for the title + region names (OFL, see fonts/OFL.txt) */
+@font-face {
+    font-family: "Cinzel";
+    src: url("../fonts/cinzel-latin.woff2") format("woff2");
+    font-weight: 400 800;
+    font-display: swap;
 }
 
 @media (prefers-color-scheme: light) {
@@ -113,7 +122,10 @@ h1, h2, h3, h4 {
 
 h1 {
     color: var(--heading);
-    font-size: 30px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 27px;
+    letter-spacing: 0.03em;
     margin: 0;
 }
 
@@ -127,7 +139,12 @@ h3 > a:hover { color: var(--heading-hover); }
 
 /* region titles (Playthrough tab only) */
 #tabPlaythrough h3 { margin: 0; padding: 0; border: 0; scroll-margin-top: calc(var(--toolbar-h, 6.5rem) + 0.75rem); }
-#tabPlaythrough h3 > a { color: var(--heading); }
+#tabPlaythrough h3 > a {
+    color: var(--heading);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
 #tabPlaythrough h3:focus { outline: none; }
 #tabPlaythrough h3:focus-visible { outline: 2px solid var(--link); outline-offset: 4px; border-radius: 4px; }
 
