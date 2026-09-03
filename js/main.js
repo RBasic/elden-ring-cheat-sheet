@@ -163,21 +163,28 @@
                         overallChecked++;
                     }
                 }
-                if (checked == count) {
-                    this.innerHTML = $('#' + type + '_nav_totals_' + i)[0].innerHTML = '[DONE]';
-                    $(this).removeClass('in_progress').addClass('done');
-                    $($('#' + type + '_nav_totals_' + i)[0]).removeClass('in_progress').addClass('done');
+                var label, addCls, removeCls;
+                if (count == 0) {
+                    label = ''; addCls = ''; removeCls = 'done in_progress';
+                } else if (checked == count) {
+                    label = 'DONE'; addCls = 'done'; removeCls = 'in_progress';
                 } else {
-                    this.innerHTML = $('#' + type + '_nav_totals_' + i)[0].innerHTML = '[' + checked + '/' + count + ']';
-                    $(this).removeClass('done').addClass('in_progress');
-                    $($('#' + type + '_nav_totals_' + i)[0]).removeClass('done').addClass('in_progress');
+                    label = Math.round((checked / count) * 100) + '%';
+                    addCls = 'in_progress'; removeCls = 'done';
+                }
+                this.innerHTML = label;
+                $(this).removeClass(removeCls).addClass(addCls);
+                var navEl = $('#' + type + '_nav_totals_' + i)[0];
+                if (navEl) {
+                    navEl.innerHTML = label;
+                    $(navEl).removeClass(removeCls).addClass(addCls);
                 }
             });
-            if (overallChecked == overallCount) {
-                this.innerHTML = '[DONE]';
+            if (overallCount > 0 && overallChecked == overallCount) {
+                this.innerHTML = 'DONE';
                 $(this).removeClass('in_progress').addClass('done');
             } else {
-                this.innerHTML = '[' + overallChecked + '/' + overallCount + ']';
+                this.innerHTML = overallCount ? Math.round((overallChecked / overallCount) * 100) + '%' : '';
                 $(this).removeClass('done').addClass('in_progress');
             }
         });

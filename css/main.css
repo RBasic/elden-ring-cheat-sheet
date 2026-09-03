@@ -91,20 +91,15 @@ h3 { font-size: 21px; font-weight: 400; margin: 1.5rem 0 0.5rem; }
 h3 > a:hover { color: #fff; }
 
 /* region titles (Playthrough tab only) */
-#tabPlaythrough h3 {
-    margin: 3rem 0 0.35rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-strong);
-    scroll-margin-top: 3.75rem;
-}
+#tabPlaythrough h3 { margin: 0; padding: 0; border: 0; scroll-margin-top: 6.5rem; }
 #tabPlaythrough h3 > a { color: var(--heading); }
 
 /* "Recomendations:" label + the loose Level/Upgrades line that follows it
    (their original HTML puts <h4> inside <p>, so the browser splits them into
-   siblings of #tabPlaythrough — we style them as one meta strip) */
-#tabPlaythrough > p:empty { display: none; }
+   siblings inside .region-body — we style them as one meta strip) */
+.region-body > p:empty { display: none; }
 
-#tabPlaythrough > h4 {
+.region-body > h4 {
     display: block;
     font-size: 11px;
     font-weight: 700;
@@ -114,15 +109,15 @@ h3 > a:hover { color: #fff; }
     margin: 0.85rem 0 0.15rem;
 }
 /* the value line: "<strong>Level:</strong> 1 ~ 10 <strong>Upgrades:</strong> …" */
-#tabPlaythrough > h4 + strong,
-#tabPlaythrough > strong,
-#tabPlaythrough > div > strong {
+.region-body > h4 + strong,
+.region-body > strong,
+.region-body > div > strong {
     color: var(--accent);
     font-weight: 700;
     font-size: 13px;
     margin-left: 0.15rem;
 }
-#tabPlaythrough > div {
+.region-body > div {
     color: var(--text-dim);
     font-size: 13px;
 }
@@ -149,7 +144,7 @@ p { color: var(--text); }
     align-items: center;
     gap: 0.75rem 1.25rem;
     min-height: 0;
-    padding: 3.25rem 0 0.75rem;
+    padding: 1.25rem 0 0.75rem;
     background: none;
     border: 0;
     border-bottom: 1px solid var(--border);
@@ -227,17 +222,33 @@ p { color: var(--text); }
     color: #fff;
 }
 
-/* ----- collapsible region sidebar (table of contents) ----------------- */
+/* ----- sticky toolbar ------------------------------------------------- */
+
+/* Bootstrap sets .tab-content{overflow:auto} which breaks position:sticky */
+.tab-content { overflow: visible; }
+
+#erToolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: 0 -20px 1rem;
+    padding: 0.6rem 20px 0.65rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+#erToolbar .er-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+#erToolbar .er-row + .er-row { margin-top: 0.55rem; }
 
 #tocToggle {
-    position: fixed;
-    top: 0.7rem;
-    left: 0.7rem;
-    z-index: 1002;
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 7px 13px;
+    gap: 0.45rem;
+    padding: 6px 13px;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -246,12 +257,130 @@ p { color: var(--text); }
     border: 1px solid var(--heading);
     border-radius: 999px;
     cursor: pointer;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
 }
 #tocToggle:hover { background: #ffdd4d; }
 #tocToggle .toc-x { display: none; }
 body.toc-open #tocToggle .toc-burger { display: none; }
 body.toc-open #tocToggle .toc-x { display: inline; }
+
+/* overall progress bar */
+.er-progress {
+    flex: 1 1 auto;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bg-sunken);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+.er-progress-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.25s ease, background 0.25s ease;
+}
+.er-progress.is-done .er-progress-fill { background: var(--done); }
+.er-progress-pct {
+    flex: 0 0 auto;
+    min-width: 3ch;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+}
+
+/* filter row controls */
+#erFilter {
+    flex: 1 1 180px;
+    min-width: 0;
+    padding: 6px 11px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg-sunken);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+}
+#erFilter:focus { outline: none; border-color: var(--border-strong); }
+#erFilter::placeholder { color: var(--text-dim); }
+.er-check {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.er-check input { width: 15px; height: 15px; accent-color: var(--heading); }
+#erCollapseAll {
+    flex: 0 0 auto;
+    padding: 5px 11px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+#erCollapseAll:hover { color: var(--heading); }
+
+@media (max-width: 640px) {
+    #erToolbar .er-row { flex-wrap: wrap; }
+    .er-check, #erCollapseAll { font-size: 12px; }
+}
+
+/* ----- collapsible regions ------------------------------------------- */
+
+.region { margin: 0; }
+.region-head {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 0.15rem 0.35rem;
+    margin-left: -0.35rem;
+}
+.region-head:hover { background: rgba(255, 255, 255, 0.04); }
+.region-head::before {
+    content: "\25BE";
+    flex: 0 0 auto;
+    color: var(--text-dim);
+    font-size: 0.8em;
+    transition: transform 0.15s ease;
+}
+.region.is-collapsed .region-head::before { transform: rotate(-90deg); }
+.region-head h3 { border: 0; margin: 0; flex: 1 1 auto; }
+.region-head h3 > a { text-decoration: none; }
+.region-head h3 > a:hover { color: var(--heading); }
+.region-head h3 > a[target="_blank"]::after { content: none; }  /* use .region-wiki instead */
+.region-wiki {
+    flex: 0 0 auto;
+    padding: 0 0.4rem;
+    font-size: 0.95em;
+    color: var(--text-dim);
+    text-decoration: none;
+}
+a.region-wiki[target="_blank"]::after { content: none; }
+.region-wiki:hover { color: var(--link); }
+.region {
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 0.5rem;
+    margin-top: 2.75rem;
+}
+.region:first-of-type { margin-top: 1rem; }
+.region.is-collapsed { padding-bottom: 0; }
+.region.is-collapsed .region-body { display: none; }
+body.er-filtering .region-body { display: block !important; }
+
+.region[hidden] { display: none; }
+li[data-id][hidden] { display: none; }
+
+/* ----- collapsible region sidebar (drawer) -------------------------- */
 
 #tocOverlay {
     position: fixed;
@@ -322,18 +451,11 @@ body.toc-open #tocSidebar { transform: translateX(0); }
     padding: 0 5px;
 }
 
-body.toc-hidden #tocToggle,
-body.toc-hidden #tocSidebar,
-body.toc-hidden #tocOverlay { display: none; }
-
-/* keep page content clear of the fixed toggle button */
-body.toc-hidden .navbar-inner { padding-top: 1.25rem; }
-
 /* ----- checklist lists --------------------------------------------------- */
 
 ul { list-style-type: none; margin-left: 0; }
 
-#tabPlaythrough > ul {
+.region-body > ul {
     margin: 0 0 0.5rem;
     padding: 0;
 }
@@ -489,12 +611,15 @@ th { text-align: left; }
 @media print {
     html, body, body.dark-mode { background: #fff; color: #000; }
     .navbar, #intro, input[type="checkbox"], .done, .in_progress,
-    #tocToggle, #tocOverlay { display: none; }
+    #tocToggle, #tocOverlay, #erToolbar { display: none; }
     .container { max-width: none; padding: 0; }
     #tocSidebar {
         position: static; transform: none; width: auto; height: auto;
         box-shadow: none; border: 0; padding: 0; overflow: visible;
     }
+    .region.is-collapsed .region-body { display: block; }
+    .region-head { cursor: auto; }
+    .region-head::before { display: none; }
     a { color: #000; text-decoration: underline; }
     a[target="_blank"]::after { content: ""; }
     label.checkbox { min-height: 0; padding: 2px 0; }
