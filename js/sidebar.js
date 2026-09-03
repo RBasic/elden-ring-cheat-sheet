@@ -115,7 +115,11 @@
             '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
             '<button type="button" id="erCollapseAll">Tout replier</button>' +
         '</div>';
+    var sentinel = document.createElement('div');
+    sentinel.className = 'er-toolbar-sentinel';
+    sentinel.setAttribute('aria-hidden', 'true');
     pane.insertBefore(toolbar, pane.firstChild);
+    pane.insertBefore(sentinel, toolbar);
 
     var noResults = document.createElement('p');
     noResults.className = 'er-no-results';
@@ -125,6 +129,13 @@
     // move the existing sidebar toggle into the toolbar
     toolbar.querySelector('.er-row').insertBefore(toggle, toolbar.querySelector('.er-progress'));
 
+    // shadow under the toolbar once it is pinned to the top
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+            toolbar.classList.toggle('is-stuck', !entries[0].isIntersecting);
+        }).observe(sentinel);
+    }
+
     var progFill = toolbar.querySelector('.er-progress-fill');
     var progPct = toolbar.querySelector('.er-progress-pct');
     var progWrap = toolbar.querySelector('.er-progress');
@@ -133,8 +144,12 @@
     function syncProgress() {
         var t = (overallSpan.textContent || '').trim();
         var p = t === 'DONE' ? 100 : (parseInt(t, 10) || 0);
+        var done = overallSpan.getAttribute('data-checked');
+        var total = overallSpan.getAttribute('data-count');
         progFill.style.width = p + '%';
-        progPct.textContent = p + '%';
+        progPct.textContent = (done && total && total !== '0')
+            ? done + ' / ' + total + ' · ' + p + '%'
+            : p + '%';
         progWrap.setAttribute('aria-valuenow', p);
         progWrap.classList.toggle('is-done', p === 100);
     }
@@ -218,6 +233,8 @@
         body.classList.toggle('toc-open', open);
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         overlay.hidden = !open;
+        sidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
+        if ('inert' in HTMLElement.prototype) { sidebar.inert = !open; }
         if (persist !== false) {
             try { localStorage.setItem(STORE_KEY, open ? '1' : '0'); } catch (e) {}
         }
@@ -273,4 +290,70 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     updateActive();
+
+    /* ------------------------------------------------------------------ *
+     *  7. Backup / restore progress (Help tab)
+     * ------------------------------------------------------------------ */
+
+    var help = document.getElementById('tabHelp');
+    if (help) {
+        var box = document.createElement('div');
+        box.className = 'er-backup';
+        box.innerHTML =
+            '<h3>Sauvegarder / restaurer ma progression</h3>' +
+            '<p>La progression est stockée uniquement dans ce navigateur. Copie ce texte ' +
+            'pour la garder ailleurs, ou colle une sauvegarde pour la restaurer ' +
+            '(remplace la progression actuelle).</p>' +
+            '<div class="er-backup-row">' +
+                '<button type="button" id="erExport">Copier ma progression</button>' +
+                '<span id="erExportMsg" role="status"></span>' +
+            '</div>' +
+            '<textarea id="erImportBox" rows="4" spellcheck="false" ' +
+                'placeholder="Colle ici une sauvegarde JSON…"></textarea>' +
+            '<div class="er-backup-row">' +
+                '<button type="button" id="erImport">Restaurer depuis le texte</button>' +
+                '<span id="erImportMsg" role="status"></span>' +
+            '</div>';
+        help.appendChild(box);
+
+        var STORAGE = 'jStorage';
+        var exportBtn = document.getElementById('erExport');
+        var importBtn = document.getElementById('erImport');
+        var importBox = document.getElementById('erImportBox');
+        var exportMsg = document.getElementById('erExportMsg');
+        var importMsg = document.getElementById('erImportMsg');
+
+        function readAll() {
+            try { return localStorage.getItem(STORAGE) || ''; } catch (e) { return ''; }
+        }
+
+        exportBtn.addEventListener('click', function () {
+            var data = readAll();
+            if (!data) { exportMsg.textContent = 'Rien à exporter pour le moment.'; return; }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(data).then(
+                    function () { exportMsg.textContent = '✓ Copié dans le presse-papier.'; },
+                    function () { importBox.value = data; importBox.select(); exportMsg.textContent = 'Copie auto impossible — sélectionné, fais Ctrl+C.'; }
+                );
+            } else {
+                importBox.value = data; importBox.select();
+                exportMsg.textContent = 'Sélectionné ci-dessous — fais Ctrl+C.';
+            }
+        });
+
+        importBtn.addEventListener('click', function () {
+            var raw = importBox.value.trim();
+            if (!raw) { importMsg.textContent = 'Colle d’abord une sauvegarde.'; return; }
+            var parsed;
+            try { parsed = JSON.parse(raw); } catch (e) { importMsg.textContent = 'JSON invalide.'; return; }
+            if (!parsed || typeof parsed !== 'object' || !parsed.elden_ring_profiles) {
+                importMsg.textContent = 'Ce texte ne ressemble pas à une sauvegarde valide.';
+                return;
+            }
+            try { localStorage.setItem(STORAGE, raw); }
+            catch (e) { importMsg.textContent = 'Écriture impossible (stockage plein ou bloqué).'; return; }
+            importMsg.textContent = '✓ Restauré — rechargement…';
+            setTimeout(function () { location.reload(); }, 700);
+        });
+    }
 })();

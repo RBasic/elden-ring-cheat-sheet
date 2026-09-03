@@ -227,6 +227,8 @@ p { color: var(--text); }
 /* Bootstrap sets .tab-content{overflow:auto} which breaks position:sticky */
 .tab-content { overflow: visible; }
 
+.er-toolbar-sentinel { height: 1px; margin-bottom: -1px; }
+
 #erToolbar {
     position: sticky;
     top: 0;
@@ -235,7 +237,9 @@ p { color: var(--text); }
     padding: 0.6rem 20px 0.65rem;
     background: var(--bg);
     border-bottom: 1px solid var(--border);
+    transition: box-shadow 0.18s ease;
 }
+#erToolbar.is-stuck { box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.55); }
 #erToolbar .er-row {
     display: flex;
     align-items: center;
@@ -283,11 +287,12 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 .er-progress.is-done .er-progress-fill { background: var(--done); }
 .er-progress-pct {
     flex: 0 0 auto;
-    min-width: 3ch;
     text-align: right;
     font-size: 12px;
     font-weight: 700;
     color: var(--text-dim);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 /* filter row controls */
@@ -335,8 +340,49 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 
 @media (max-width: 640px) {
     #erToolbar .er-row { flex-wrap: wrap; }
-    .er-check, #erCollapseAll { font-size: 12px; }
+    #erHideDone, #erCollapseAll { font-size: 12px; }
 }
+
+/* ----- backup / restore (Help tab) --------------------------------------- */
+
+.er-backup {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+.er-backup-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0.6rem 0;
+}
+.er-backup button {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bg);
+    background: var(--heading);
+    border: 1px solid var(--heading);
+    border-radius: 999px;
+    cursor: pointer;
+}
+.er-backup button:hover { background: #ffdd4d; }
+.er-backup [role="status"] { font-size: 12.5px; color: var(--done); }
+#erImportBox {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0.3rem;
+    padding: 8px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--bg-sunken);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    resize: vertical;
+}
+#erImportBox:focus { outline: none; border-color: var(--border-strong); }
 
 /* ----- collapsible regions ------------------------------------------- */
 
@@ -553,18 +599,18 @@ li[data-id]:has(> label.checkbox > input:checked) label.checkbox a {
     color: var(--text-dim);
 }
 
-/* ----- progress badges (main.js writes "[x/y]" / "[DONE]") ------------- */
+/* ----- progress badges (main.js writes "13 / 37 · 35%" / "DONE") ------- */
 
-span[id*="_totals_"],
-span[id*="_overall_total"] {
+span[id*="_totals_"] {
     display: inline-block;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     padding: 1px 8px;
     border-radius: 999px;
     vertical-align: middle;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 .in_progress {
     color: var(--accent);
@@ -576,8 +622,8 @@ span[id*="_overall_total"] {
     border: 2px dotted rgba(69, 229, 109, 0.5);
     background: none;
 }
-/* overall total sits next to the H2 */
-#playthrough_overall_total { font-size: 13px; }
+/* the H2's overall badge is redundant with the toolbar progress bar */
+#playthrough_overall_total { display: none; }
 
 /* ----- modal (profile add/edit) --------------------------------------- */
 
@@ -637,7 +683,7 @@ th { text-align: left; }
     }
     .region.is-collapsed .region-body { display: block; }
     .region-head { cursor: auto; }
-    .region-collapse, .er-no-results { display: none; }
+    .region-collapse, .er-no-results, .er-backup { display: none; }
     a { color: #000; text-decoration: underline; }
     a[target="_blank"]::after { content: ""; }
     label.checkbox { min-height: 0; padding: 2px 0; }

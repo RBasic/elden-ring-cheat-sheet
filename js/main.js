@@ -163,23 +163,27 @@
                         overallChecked++;
                     }
                 }
-                var label, addCls, removeCls;
+                var pct, headerLabel, navLabel, addCls, removeCls;
                 if (count == 0) {
-                    label = ''; addCls = ''; removeCls = 'done in_progress';
+                    headerLabel = navLabel = ''; addCls = ''; removeCls = 'done in_progress';
                 } else if (checked == count) {
-                    label = 'DONE'; addCls = 'done'; removeCls = 'in_progress';
+                    headerLabel = navLabel = 'DONE'; addCls = 'done'; removeCls = 'in_progress';
                 } else {
-                    label = Math.round((checked / count) * 100) + '%';
+                    pct = Math.round((checked / count) * 100) + '%';
+                    navLabel = pct;
+                    headerLabel = checked + ' / ' + count + ' · ' + pct;
                     addCls = 'in_progress'; removeCls = 'done';
                 }
-                this.innerHTML = label;
+                this.innerHTML = headerLabel;
                 $(this).removeClass(removeCls).addClass(addCls);
                 var navEl = $('#' + type + '_nav_totals_' + i)[0];
                 if (navEl) {
-                    navEl.innerHTML = label;
+                    navEl.innerHTML = navLabel;
                     $(navEl).removeClass(removeCls).addClass(addCls);
                 }
             });
+            this.setAttribute('data-checked', overallChecked);
+            this.setAttribute('data-count', overallCount);
             if (overallCount > 0 && overallChecked == overallCount) {
                 this.innerHTML = 'DONE';
                 $(this).removeClass('in_progress').addClass('done');
