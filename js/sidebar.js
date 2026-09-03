@@ -190,7 +190,7 @@
             '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
             '<button type="button" id="erCollapseAll">Tout replier</button>' +
             '<button type="button" id="erBackup" ' +
-                'title="Copier ma progression dans le presse-papier">Sauvegarder</button>' +
+                'title="Télécharger un fichier de sauvegarde de ma progression">Sauvegarder</button>' +
         '</div>' +
         '<div class="er-row er-chips" role="group" aria-label="Filtrer par catégorie">' +
             '<button type="button" class="er-chip is-on" data-type="">Tous</button>' +
