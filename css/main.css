@@ -313,7 +313,8 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 #erFilter:focus { outline: none; border-color: var(--border-strong); }
 #erFilter::placeholder { color: var(--text-dim); }
 #erHideDone,
-#erCollapseAll {
+#erCollapseAll,
+#erBackup {
     flex: 0 0 auto;
     padding: 5px 11px;
     font-size: 12.5px;
@@ -325,7 +326,23 @@ body.toc-open #tocToggle .toc-x { display: inline; }
     white-space: nowrap;
 }
 #erHideDone:hover,
-#erCollapseAll:hover { color: var(--heading); }
+#erCollapseAll:hover,
+#erBackup:hover { color: var(--heading); }
+
+/* transient "✓ Copié" overlay — keeps the button width stable */
+#erBackup { position: relative; }
+#erBackup[data-flash]::after {
+    content: attr(data-flash);
+    position: absolute;
+    inset: -1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--bg);
+    background: var(--done);
+    border-radius: inherit;
+}
 #erHideDone[aria-pressed="true"] {
     color: var(--bg);
     background: var(--accent);

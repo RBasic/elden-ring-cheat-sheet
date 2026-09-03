@@ -23,6 +23,25 @@
         return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/[^\w-]/g, '\\$&');
     }
 
+    // --- progress backup (jStorage blob) --------------------------------
+    var STORAGE = 'jStorage';
+    function readProgress() {
+        try { return localStorage.getItem(STORAGE) || ''; } catch (e) { return ''; }
+    }
+    // done('ok' | 'empty' | 'manual', data)
+    function copyProgress(done) {
+        var data = readProgress();
+        if (!data) { done('empty', ''); return; }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(data).then(
+                function () { done('ok', data); },
+                function () { done('manual', data); }
+            );
+        } else {
+            done('manual', data);
+        }
+    }
+
     /* ------------------------------------------------------------------ *
      *  1. Wrap each region so it can collapse
      * ------------------------------------------------------------------ */
@@ -140,6 +159,8 @@
             '<input id="erFilter" type="search" placeholder="Filtrer les tâches…" autocomplete="off">' +
             '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
             '<button type="button" id="erCollapseAll">Tout replier</button>' +
+            '<button type="button" id="erBackup" ' +
+                'title="Copier ma progression dans le presse-papier">Sauvegarder</button>' +
         '</div>' +
         '<div class="er-row er-chips" role="group" aria-label="Filtrer par catégorie">' +
             '<button type="button" class="er-chip is-on" data-type="">Tous</button>' +
@@ -210,6 +231,19 @@
         refreshCollapseAllLabel();
     });
     refreshCollapseAllLabel();
+
+    // quick "copy my progress" button, always reachable in the sticky toolbar
+    var backupBtn = document.getElementById('erBackup');
+    var backupTimer;
+    backupBtn.addEventListener('click', function () {
+        copyProgress(function (status) {
+            clearTimeout(backupTimer);
+            backupBtn.dataset.flash =
+                status === 'ok' ? '✓ Copié' :
+                status === 'empty' ? 'Rien à copier' : 'Onglet Help ↗';
+            backupTimer = setTimeout(function () { delete backupBtn.dataset.flash; }, 1800);
+        });
+    });
 
     /* ------------------------------------------------------------------ *
      *  4. Filter + hide-completed
@@ -364,29 +398,23 @@
             '</div>';
         help.appendChild(box);
 
-        var STORAGE = 'jStorage';
         var exportBtn = document.getElementById('erExport');
         var importBtn = document.getElementById('erImport');
         var importBox = document.getElementById('erImportBox');
         var exportMsg = document.getElementById('erExportMsg');
         var importMsg = document.getElementById('erImportMsg');
 
-        function readAll() {
-            try { return localStorage.getItem(STORAGE) || ''; } catch (e) { return ''; }
-        }
-
         exportBtn.addEventListener('click', function () {
-            var data = readAll();
-            if (!data) { exportMsg.textContent = 'Rien à exporter pour le moment.'; return; }
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(data).then(
-                    function () { exportMsg.textContent = '✓ Copié dans le presse-papier.'; },
-                    function () { importBox.value = data; importBox.select(); exportMsg.textContent = 'Copie auto impossible — sélectionné, fais Ctrl+C.'; }
-                );
-            } else {
-                importBox.value = data; importBox.select();
-                exportMsg.textContent = 'Sélectionné ci-dessous — fais Ctrl+C.';
-            }
+            copyProgress(function (status, data) {
+                if (status === 'ok') {
+                    exportMsg.textContent = '✓ Copié dans le presse-papier.';
+                } else if (status === 'empty') {
+                    exportMsg.textContent = 'Rien à exporter pour le moment.';
+                } else {
+                    importBox.value = data; importBox.select();
+                    exportMsg.textContent = 'Copie auto impossible — sélectionné ci-dessous, fais Ctrl+C.';
+                }
+            });
         });
 
         importBtn.addEventListener('click', function () {
