@@ -34,8 +34,9 @@
         var data = readProgress();
         if (!data) { return false; }
         var d = new Date();
-        var name = 'elden-ring-save-' + d.getFullYear() + '-' +
-            pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + '.txt';
+        var name = 'elden-ring-save-' +
+            pad2(d.getFullYear() % 100) + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
+            '-' + pad2(d.getHours()) + '-' + pad2(d.getMinutes()) + '-' + pad2(d.getSeconds()) + '.txt';
         var url = URL.createObjectURL(new Blob([data], { type: 'text/plain' }));
         var a = document.createElement('a');
         a.href = url;
