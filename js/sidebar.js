@@ -50,25 +50,25 @@
     // validate a save string and apply it (then reload). msg(text) reports status.
     function restoreProgress(raw, msg) {
         raw = (raw || '').trim();
-        if (!raw) { msg('Fichier vide.'); return; }
+        if (!raw) { msg('Empty file.'); return; }
         var parsed;
         try { parsed = JSON.parse(raw); }
-        catch (e) { msg('Fichier illisible (JSON invalide).'); return; }
+        catch (e) { msg('Unreadable file (invalid JSON).'); return; }
         if (!parsed || typeof parsed !== 'object' || !parsed.elden_ring_profiles) {
-            msg('Ce fichier n’est pas une sauvegarde valide.'); return;
+            msg("This file isn't a valid save."); return;
         }
         try { localStorage.setItem(STORAGE, raw); }
-        catch (e) { msg('Écriture impossible (stockage plein ou bloqué).'); return; }
-        msg('✓ Restauré — rechargement…');
+        catch (e) { msg("Couldn't write (storage full or blocked)."); return; }
+        msg('✓ Restored — reloading…');
         setTimeout(function () { location.reload(); }, 700);
     }
     function readFile(file, msg, onText) {
         if (file.text) {
-            file.text().then(onText, function () { msg('Lecture du fichier impossible.'); });
+            file.text().then(onText, function () { msg("Couldn't read the file."); });
         } else {
             var fr = new FileReader();
             fr.onload = function () { onText(String(fr.result)); };
-            fr.onerror = function () { msg('Lecture du fichier impossible.'); };
+            fr.onerror = function () { msg("Couldn't read the file."); };
             fr.readAsText(file);
         }
     }
@@ -92,11 +92,12 @@
         bodyWrap.className = 'region-body';
 
         h3.parentNode.insertBefore(section, h3);
+        h3.tabIndex = -1;   // focusable via nav clicks, not in the tab order
 
         var cbtn = document.createElement('button');
         cbtn.type = 'button';
         cbtn.className = 'region-collapse';
-        cbtn.setAttribute('aria-label', 'Replier ou déplier cette région');
+        cbtn.setAttribute('aria-label', 'Collapse or expand this region');
         cbtn.setAttribute('aria-expanded', collapsed.has(h3.id) ? 'false' : 'true');
         head.appendChild(cbtn);
         head.appendChild(h3);
@@ -184,36 +185,34 @@
     var toolbar = document.createElement('div');
     toolbar.id = 'erToolbar';
     toolbar.innerHTML =
-        '<div class="er-row er-row-progress">' +
-            '<span class="er-progress" role="progressbar" aria-label="Progression globale"' +
+        '<div class="er-row er-row-top">' +
+            '<span class="er-progress" role="progressbar" aria-label="Overall progress"' +
                 ' aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
                 '<span class="er-progress-fill"></span>' +
             '</span>' +
             '<span class="er-progress-pct">0%</span>' +
-        '</div>' +
-        '<div class="er-row er-row-filter">' +
-            '<input id="erFilter" type="search" placeholder="Filtrer les tâches…  ( / )" ' +
-                'title="Raccourci clavier : /" autocomplete="off">' +
+            '<input id="erFilter" type="search" placeholder="Filter tasks…  ( / )" ' +
+                'title="Keyboard shortcut: /" autocomplete="off">' +
         '</div>' +
         '<div class="er-row er-actions">' +
-            '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
-            '<button type="button" id="erCollapseAll">Tout replier</button>' +
+            '<button type="button" id="erHideDone" aria-pressed="false">Hide done</button>' +
+            '<button type="button" id="erCollapseAll">Collapse all</button>' +
             '<button type="button" id="erBackup" ' +
-                'title="Télécharger un fichier de sauvegarde de ma progression">Sauvegarder</button>' +
+                'title="Download a save file of my progress">Save</button>' +
             '<label class="er-filebtn" ' +
-                'title="Restaurer la progression depuis un fichier de sauvegarde">Restaurer' +
+                'title="Restore progress from a save file">Restore' +
                 '<input type="file" id="erImportFile" ' +
                 'accept=".txt,.json,application/json,text/plain"></label>' +
             '<span id="erBackupMsg" role="status"></span>' +
         '</div>' +
-        '<div class="er-row er-chips" role="radiogroup" aria-label="Filtrer par catégorie">' +
-            '<button type="button" class="er-chip is-on" role="radio" aria-checked="true" tabindex="0" data-type="">Tous</button>' +
+        '<div class="er-row er-chips" role="radiogroup" aria-label="Filter by category">' +
+            '<button type="button" class="er-chip is-on" role="radio" aria-checked="true" tabindex="0" data-type="">All</button>' +
             '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="boss">Boss</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="dungeon">Donjons</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="dungeon">Dungeons</button>' +
             '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="loot">Loot</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="npc">PNJ</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="grace">Grâces</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="shop">Achats</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="npc">NPCs</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="grace">Graces</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="shop">Shops</button>' +
         '</div>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
@@ -223,7 +222,7 @@
 
     var noResults = document.createElement('p');
     noResults.className = 'er-no-results';
-    noResults.textContent = 'Aucune tâche ne correspond à ce filtre.';
+    noResults.textContent = 'No task matches this filter.';
     noResults.hidden = true;
     pane.appendChild(noResults);
     // move the existing sidebar toggle into the toolbar
@@ -274,7 +273,7 @@
     var collapseAllBtn = document.getElementById('erCollapseAll');
     function refreshCollapseAllLabel() {
         var anyOpen = sections.some(function (s) { return !s.classList.contains('is-collapsed'); });
-        collapseAllBtn.textContent = anyOpen ? 'Tout replier' : 'Tout déplier';
+        collapseAllBtn.textContent = anyOpen ? 'Collapse all' : 'Expand all';
     }
     collapseAllBtn.addEventListener('click', function () {
         var anyOpen = sections.some(function (s) { return !s.classList.contains('is-collapsed'); });
@@ -293,7 +292,7 @@
         if (!sticky) { backupMsgTimer = setTimeout(function () { backupMsg.textContent = ''; }, 4000); }
     }
     document.getElementById('erBackup').addEventListener('click', function () {
-        setBackupMsg(downloadProgress() ? '✓ Fichier téléchargé' : 'Rien à sauvegarder pour le moment');
+        setBackupMsg(downloadProgress() ? '✓ File downloaded' : 'Nothing to save yet');
     });
     var importFile = document.getElementById('erImportFile');
     importFile.addEventListener('change', function () {
@@ -310,12 +309,12 @@
     var profileSelect = document.getElementById('profiles');
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-            var name = (profileSelect && profileSelect.value) || 'ce profil';
+            var name = (profileSelect && profileSelect.value) || 'this profile';
             if (!window.confirm(
-                '⚠ Réinitialiser la progression\n\n' +
-                'Toutes les cases du profil « ' + name + ' » vont être décochées. ' +
-                'Cette action est irréversible (pense à Sauvegarder d’abord).\n\n' +
-                'Les autres profils ne sont pas touchés.'
+                '⚠ Reset progress\n\n' +
+                'Every checkbox in the "' + name + '" profile will be unchecked. ' +
+                'This cannot be undone (use Save first if you want a backup).\n\n' +
+                'Other profiles are not affected.'
             )) { return; }
             try {
                 var js = JSON.parse(localStorage.getItem(STORAGE) || 'null');
@@ -530,6 +529,9 @@
         var section = pane.querySelector('.region[data-region="' + esc(id) + '"]');
         if (section) { setCollapsed(section, false); persistCollapsed(); refreshCollapseAllLabel(); }
         if (window.innerWidth < 1000) { setOpen(false); }
+        // land keyboard focus on the region heading, not back on the toggle
+        var h = document.getElementById(id);
+        if (h) { h.focus({ preventScroll: true }); }
     });
 
     /* ------------------------------------------------------------------ *
