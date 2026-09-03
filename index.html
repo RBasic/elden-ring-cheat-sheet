@@ -39,12 +39,6 @@
         <div class="navbar">
             <div class="navbar-inner">
                 <h1>Elden Ring Cheat Sheet</h1>
-                <ul class="nav nav-tabs">
-                    <li class="active"><a href="#tabPlaythrough" data-toggle="tab">Playthrough</a></li>
-                    <!-- <li><a href="#tabChecklists" data-toggle="tab">Checklists</a></li> -->
-                    <!-- <li><a href="#tabInformation" data-toggle="tab">Information</a></li> -->
-                    <li><a href="#tabHelp" data-toggle="tab">Help</a></li>
-                </ul>
                 <div class="profile" style="float: right;">
                     <div class="input-append">
                         <select id="profiles">
@@ -57,7 +51,7 @@
         </div>
         <div class="tab-content">
             <div class="tab-pane active" id="tabPlaythrough">
-                <h2>Playthrough Checklist <span id="playthrough_overall_total"></span></h2>
+                <span id="playthrough_overall_total" hidden></span>
                 <nav id="tocSidebar" aria-label="Playthrough regions">
                 <span class="toc-title">Regions</span>
                 <ul>
@@ -1273,44 +1267,6 @@
                     <li data-id="playthrough_28_5">Dung Eater's ending</li>
                     <li data-id="playthrough_28_6">Default ending</li>
                 </ul>
-            </div>
-            
-            <div class="tab-pane" id="tabHelp">
-
-                <h2>Help</h2>
-
-                <h3>Is this a guide?</h3>
-                <p>
-                    Nope, not really. This is a set of checklists and information that you can use while playing Elden Ring
-                    to make sure you don't miss an item, action, conversation or boss. If you need playthroughs
-                    then you can click on the links scattered throughout the page to find them in the wiki.
-                </p>
-
-                <h3>Do I need to follow the playthrough in this exact order?</h3>
-                <p>
-                    Elden Ring is not a liner game and has multiple ways of progressing. This is generally the way I
-                    like to play through the game, so feel free to follow it if you like or mix it up. You can always
-                    jump back and forth and check things off in a different order.
-                </p>
-
-                <h3>Can I use this for multiple characters?</h3>
-                <p>
-                    Yup, use the profile selector and buttons at the top right of the page to setup multiple
-                    characters.
-                </p>
-
-                <h3>How do I help with feedback, corrections, suggestions or additions?</h3>
-                <p>
-                    If you know your way about Git/GitHub then fork <a href="https://github.com/rbasic/elden-ring-cheat-sheet/tree/gh-pages">my repo</a> and submit a pull request.
-                </p>
-
-                <h3>How does the checklist status get saved?</h3>
-                <p>
-                    It gets saved to the local storage in your browser and not to any database or API. So if you are
-                    clearing your browser cache make sure not to delete the site data or your checklists will
-                    get reset. At some point in the future I might hook it up to an API.
-                </p>
-
             </div>
         </div>
     </div>

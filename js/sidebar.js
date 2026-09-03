@@ -178,27 +178,34 @@
     var toolbar = document.createElement('div');
     toolbar.id = 'erToolbar';
     toolbar.innerHTML =
-        '<div class="er-row">' +
+        '<div class="er-row er-row-progress">' +
             '<span class="er-progress" role="progressbar" aria-label="Progression globale"' +
                 ' aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
                 '<span class="er-progress-fill"></span>' +
             '</span>' +
             '<span class="er-progress-pct">0%</span>' +
         '</div>' +
-        '<div class="er-row">' +
+        '<div class="er-row er-row-filter">' +
             '<input id="erFilter" type="search" placeholder="Filtrer les tâches…" autocomplete="off">' +
+        '</div>' +
+        '<div class="er-row er-actions">' +
             '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
             '<button type="button" id="erCollapseAll">Tout replier</button>' +
             '<button type="button" id="erBackup" ' +
                 'title="Télécharger un fichier de sauvegarde de ma progression">Sauvegarder</button>' +
+            '<label class="er-filebtn" ' +
+                'title="Restaurer la progression depuis un fichier de sauvegarde">Restaurer' +
+                '<input type="file" id="erImportFile" ' +
+                'accept=".txt,.json,application/json,text/plain"></label>' +
+            '<span id="erBackupMsg" role="status"></span>' +
         '</div>' +
-        '<div class="er-row er-chips" role="group" aria-label="Filtrer par catégorie">' +
-            '<button type="button" class="er-chip is-on" data-type="">Tous</button>' +
-            '<button type="button" class="er-chip" data-type="boss">Boss</button>' +
-            '<button type="button" class="er-chip" data-type="dungeon">Donjons</button>' +
-            '<button type="button" class="er-chip" data-type="loot">Loot</button>' +
-            '<button type="button" class="er-chip" data-type="npc">PNJ</button>' +
-            '<button type="button" class="er-chip" data-type="shop">Achats</button>' +
+        '<div class="er-row er-chips" role="radiogroup" aria-label="Filtrer par catégorie">' +
+            '<button type="button" class="er-chip is-on" role="radio" aria-checked="true" tabindex="0" data-type="">Tous</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="boss">Boss</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="dungeon">Donjons</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="loot">Loot</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="npc">PNJ</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="shop">Achats</button>' +
         '</div>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
@@ -221,6 +228,13 @@
         }).observe(sentinel);
     }
 
+    // keep anchor jumps clear of the sticky toolbar, whatever its height
+    function syncToolbarHeight() {
+        body.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+    }
+    syncToolbarHeight();
+    window.addEventListener('resize', syncToolbarHeight);
+
     var progFill = toolbar.querySelector('.er-progress-fill');
     var progPct = toolbar.querySelector('.er-progress-pct');
     var progWrap = toolbar.querySelector('.er-progress');
@@ -232,8 +246,8 @@
         var done = overallSpan.getAttribute('data-checked');
         var total = overallSpan.getAttribute('data-count');
         progFill.style.width = p + '%';
-        progPct.textContent = (done && total && total !== '0')
-            ? done + ' / ' + total + ' · ' + p + '%'
+        progPct.innerHTML = (done && total && total !== '0')
+            ? '<span class="er-pct-num">' + done + ' / ' + total + ' · </span>' + p + '%'
             : p + '%';
         progWrap.setAttribute('aria-valuenow', p);
         progWrap.classList.toggle('is-done', p === 100);
@@ -262,14 +276,25 @@
     });
     refreshCollapseAllLabel();
 
-    // quick "save my progress to a file" button, always reachable in the toolbar
-    var backupBtn = document.getElementById('erBackup');
-    var backupTimer;
-    backupBtn.addEventListener('click', function () {
-        var ok = downloadProgress();
-        clearTimeout(backupTimer);
-        backupBtn.dataset.flash = ok ? '✓ Fichier' : 'Rien à sauver';
-        backupTimer = setTimeout(function () { delete backupBtn.dataset.flash; }, 1800);
+    // save / restore progress as a file, always reachable in the toolbar
+    var backupMsg = document.getElementById('erBackupMsg');
+    var backupMsgTimer;
+    function setBackupMsg(text, sticky) {
+        backupMsg.textContent = text;
+        clearTimeout(backupMsgTimer);
+        if (!sticky) { backupMsgTimer = setTimeout(function () { backupMsg.textContent = ''; }, 4000); }
+    }
+    document.getElementById('erBackup').addEventListener('click', function () {
+        setBackupMsg(downloadProgress() ? '✓ Fichier téléchargé' : 'Rien à sauvegarder pour le moment');
+    });
+    var importFile = document.getElementById('erImportFile');
+    importFile.addEventListener('change', function () {
+        var file = importFile.files && importFile.files[0];
+        importFile.value = '';
+        if (!file) { return; }
+        readFile(file, setBackupMsg, function (text) {
+            restoreProgress(text, function (m) { setBackupMsg(m, true); });
+        });
     });
 
     /* ------------------------------------------------------------------ *
@@ -279,14 +304,48 @@
     var filterInput = document.getElementById('erFilter');
     var hideDoneBtn = document.getElementById('erHideDone');
     var chipRow = toolbar.querySelector('.er-chips');
+    var chips = Array.prototype.slice.call(chipRow.querySelectorAll('.er-chip'));
     var typeFilter = '';
 
     function hideDoneOn() { return hideDoneBtn.getAttribute('aria-pressed') === 'true'; }
 
-    function topLevelItems(section) {
-        return Array.prototype.slice.call(section.querySelectorAll('li[data-id]')).filter(function (li) {
-            return !li.parentElement.closest('li[data-id]');
-        });
+    // cache each region's task list + a lowercased copy of each task's text
+    // (main.js has wrapped the <li> contents by the time this runs)
+    sections.forEach(function (section) {
+        section._erItems = Array.prototype.slice
+            .call(section.querySelectorAll('li[data-id]'))
+            .filter(function (li) { return !li.parentElement.closest('li[data-id]'); });
+        section._erItems.forEach(function (li) { li._erText = li.textContent.toLowerCase(); });
+    });
+    function itemsOf(section) { return section._erItems; }
+
+    var HL_SUPPORTED = ('highlights' in CSS) && typeof window.Highlight === 'function';
+    function highlight(term) {
+        if (!HL_SUPPORTED) { return; }
+        CSS.highlights.delete('er-match');
+        if (term.length < 2) { return; }
+        var ranges = [];
+        for (var s = 0; s < sections.length && ranges.length < 3000; s++) {
+            if (sections[s].hidden) { continue; }
+            var items = itemsOf(sections[s]);
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].hidden) { continue; }
+                var walker = document.createTreeWalker(items[i], NodeFilter.SHOW_TEXT);
+                var node;
+                while ((node = walker.nextNode())) {
+                    var hay = node.nodeValue.toLowerCase();
+                    var at = hay.indexOf(term);
+                    while (at !== -1) {
+                        var r = document.createRange();
+                        r.setStart(node, at);
+                        r.setEnd(node, at + term.length);
+                        ranges.push(r);
+                        at = hay.indexOf(term, at + term.length);
+                    }
+                }
+            }
+        }
+        CSS.highlights.set('er-match', new window.Highlight(...ranges));
     }
 
     function applyFilter() {
@@ -298,8 +357,8 @@
         var totalVisible = 0;
         sections.forEach(function (section) {
             var visible = 0;
-            topLevelItems(section).forEach(function (li) {
-                var matchText = !term || li.textContent.toLowerCase().indexOf(term) !== -1;
+            itemsOf(section).forEach(function (li) {
+                var matchText = !term || li._erText.indexOf(term) !== -1;
                 var matchType = !typeFilter || li.dataset.type === typeFilter;
                 var done = !!li.querySelector('input[type="checkbox"]:checked');
                 var show = matchText && matchType && !(hideDone && done);
@@ -310,22 +369,42 @@
             totalVisible += visible;
         });
         noResults.hidden = !(anyActive && totalVisible === 0);
+        highlight(term);
     }
-    filterInput.addEventListener('input', applyFilter);
+
+    var filterTimer;
+    filterInput.addEventListener('input', function () {
+        clearTimeout(filterTimer);
+        filterTimer = setTimeout(applyFilter, 120);
+    });
     hideDoneBtn.addEventListener('click', function () {
         hideDoneBtn.setAttribute('aria-pressed', hideDoneOn() ? 'false' : 'true');
         applyFilter();
     });
-    chipRow.addEventListener('click', function (e) {
-        var chip = e.target.closest('.er-chip');
-        if (!chip) { return; }
+
+    function selectChip(chip) {
         typeFilter = chip.dataset.type;
-        Array.prototype.forEach.call(chipRow.querySelectorAll('.er-chip'), function (c) {
-            c.classList.toggle('is-on', c === chip);
-            c.setAttribute('aria-pressed', c === chip ? 'true' : 'false');
+        chips.forEach(function (c) {
+            var on = c === chip;
+            c.classList.toggle('is-on', on);
+            c.setAttribute('aria-checked', on ? 'true' : 'false');
+            c.tabIndex = on ? 0 : -1;
         });
         applyFilter();
+    }
+    chipRow.addEventListener('click', function (e) {
+        var chip = e.target.closest('.er-chip');
+        if (chip) { selectChip(chip); }
     });
+    chipRow.addEventListener('keydown', function (e) {
+        var i = chips.indexOf(e.target);
+        if (i === -1) { return; }
+        var next = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next = chips[(i + 1) % chips.length]; }
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { next = chips[(i - 1 + chips.length) % chips.length]; }
+        if (next) { e.preventDefault(); selectChip(next); next.focus(); }
+    });
+
     document.addEventListener('change', function (e) {
         if (e.target && e.target.matches && e.target.matches('#tabPlaythrough li[data-id] input[type="checkbox"]')) {
             if (hideDoneOn()) { applyFilter(); }
@@ -381,61 +460,53 @@
         if (a) { navItems[h.id] = a.parentNode; }
     });
 
-    var ticking = false;
-    function updateActive() {
-        ticking = false;
-        var current = null;
-        for (var i = 0; i < headings.length; i++) {
-            if (headings[i].getBoundingClientRect().top <= 140) { current = headings[i].id; }
-            else { break; }
-        }
-        for (var id in navItems) {
-            navItems[id].classList.toggle('toc-current', id === current);
+    function setCurrent(id) {
+        for (var key in navItems) {
+            navItems[key].classList.toggle('toc-current', key === id);
         }
     }
-    function onScroll() {
-        if (!ticking) { ticking = true; requestAnimationFrame(updateActive); }
+    function visibleHeadings() {
+        return headings.filter(function (h) { return h.getClientRects().length > 0; });
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    updateActive();
 
-    /* ------------------------------------------------------------------ *
-     *  7. Backup / restore progress (Help tab)
-     * ------------------------------------------------------------------ */
-
-    var help = document.getElementById('tabHelp');
-    if (help) {
-        var box = document.createElement('div');
-        box.className = 'er-backup';
-        box.innerHTML =
-            '<h3>Sauvegarder / restaurer ma progression</h3>' +
-            '<p>La progression est stockée uniquement dans ce navigateur. Télécharge un ' +
-            'fichier de sauvegarde pour la garder ailleurs, ou importe-le pour la ' +
-            'restaurer (remplace la progression actuelle).</p>' +
-            '<div class="er-backup-row">' +
-                '<button type="button" id="erExport">Télécharger ma progression</button>' +
-                '<label class="er-filebtn">Restaurer depuis un fichier…' +
-                    '<input type="file" id="erImportFile" ' +
-                    'accept=".txt,.json,application/json,text/plain"></label>' +
-                '<span id="erBackupMsg" role="status"></span>' +
-            '</div>';
-        help.appendChild(box);
-
-        var exportBtn = document.getElementById('erExport');
-        var importFile = document.getElementById('erImportFile');
-        var backupMsg = document.getElementById('erBackupMsg');
-        function setMsg(t) { backupMsg.textContent = t; }
-
-        exportBtn.addEventListener('click', function () {
-            setMsg(downloadProgress() ? '✓ Fichier téléchargé.' : 'Rien à sauvegarder pour le moment.');
-        });
-
-        importFile.addEventListener('change', function () {
-            var file = importFile.files && importFile.files[0];
-            importFile.value = '';   // let the same file be picked again
-            if (!file) { return; }
-            readFile(file, setMsg, function (text) { restoreProgress(text, setMsg); });
-        });
+    if ('IntersectionObserver' in window) {
+        // a region is "current" while its heading sits in a band just under the toolbar
+        var inBand = new Set();
+        var spy = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) { inBand.add(e.target); } else { inBand.delete(e.target); }
+            });
+            var vis = visibleHeadings();
+            var cur = null;
+            for (var i = 0; i < vis.length; i++) {
+                if (inBand.has(vis[i])) { cur = vis[i]; break; }   // topmost heading in the band
+            }
+            if (!cur) {                                             // none in band: last one above it
+                for (var j = 0; j < vis.length; j++) {
+                    if (vis[j].getBoundingClientRect().top < 150) { cur = vis[j]; } else { break; }
+                }
+            }
+            setCurrent(cur ? cur.id : null);
+        }, { rootMargin: '-140px 0px -70% 0px' });
+        headings.forEach(function (h) { spy.observe(h); });
+    } else {
+        var ticking = false;
+        function onScroll() {
+            if (ticking) { return; }
+            ticking = true;
+            requestAnimationFrame(function () {
+                ticking = false;
+                var vis = visibleHeadings();
+                var cur = null;
+                for (var i = 0; i < vis.length; i++) {
+                    if (vis[i].getBoundingClientRect().top <= 140) { cur = vis[i]; } else { break; }
+                }
+                setCurrent(cur ? cur.id : null);
+            });
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        onScroll();
     }
+
 })();
