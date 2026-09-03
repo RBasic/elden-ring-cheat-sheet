@@ -129,6 +129,7 @@
         var t = text.trim().toLowerCase();
         if (/^(defeat|kill)\b/.test(t)) { return 'boss'; }
         if (/^buy\b/.test(t)) { return 'shop'; }
+        if (/^rest at\b/.test(t) || (/^activate\b/.test(t) && /\bgrace\b/.test(t))) { return 'grace'; }
         if (/^complete\b/.test(t)) { return 'dungeon'; }
         if (/^(talk to|speak|meet|give|report back|agree to serve|listen for)\b/.test(t)) { return 'npc'; }
         if (/^(loot|obtain|grab|pick up|collect|get)\b/.test(t)) { return 'loot'; }
@@ -138,10 +139,14 @@
         }
         return null;
     }
-    Array.prototype.forEach.call(pane.querySelectorAll('li[data-id]'), function (li) {
+    var typeCounts = {};
+    var everyItem = Array.prototype.slice.call(pane.querySelectorAll('li[data-id]'));
+    everyItem.forEach(function (li) {
         var ty = classify(li.textContent);
         if (ty) { li.dataset.type = ty; }
+        typeCounts[ty || ''] = (typeCounts[ty || ''] || 0) + 1;
     });
+    typeCounts[''] = everyItem.length;
 
     // put the region sections in the same order as the sidebar nav
     // (the source HTML has a few regions out of progression order)
@@ -187,7 +192,8 @@
             '<span class="er-progress-pct">0%</span>' +
         '</div>' +
         '<div class="er-row er-row-filter">' +
-            '<input id="erFilter" type="search" placeholder="Filtrer les tâches…" autocomplete="off">' +
+            '<input id="erFilter" type="search" placeholder="Filtrer les tâches…  ( / )" ' +
+                'title="Raccourci clavier : /" autocomplete="off">' +
         '</div>' +
         '<div class="er-row er-actions">' +
             '<button type="button" id="erHideDone" aria-pressed="false">Masquer les faits</button>' +
@@ -206,6 +212,7 @@
             '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="dungeon">Donjons</button>' +
             '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="loot">Loot</button>' +
             '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="npc">PNJ</button>' +
+            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="grace">Grâces</button>' +
             '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="shop">Achats</button>' +
         '</div>';
     var sentinel = document.createElement('div');
@@ -298,6 +305,24 @@
         });
     });
 
+    // "Reset" — clear every check in the current profile only
+    var resetBtn = document.getElementById('profileReset');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+            if (!window.confirm('Tout décocher dans ce profil ?\n(les autres profils ne sont pas touchés)')) { return; }
+            try {
+                var js = JSON.parse(localStorage.getItem(STORAGE) || 'null');
+                var p = js && js.elden_ring_profiles;
+                var map = p && p.elden_ring_profiles;
+                if (map && map[p.current]) {
+                    map[p.current].checklistData = {};
+                    localStorage.setItem(STORAGE, JSON.stringify(js));
+                }
+            } catch (e) {}
+            location.reload();
+        });
+    }
+
     /* ------------------------------------------------------------------ *
      *  4. Filter + hide-completed
      * ------------------------------------------------------------------ */
@@ -307,6 +332,16 @@
     var chipRow = toolbar.querySelector('.er-chips');
     var chips = Array.prototype.slice.call(chipRow.querySelectorAll('.er-chip'));
     var typeFilter = '';
+
+    // show how many tasks each category holds
+    chips.forEach(function (c) {
+        var n = typeCounts[c.dataset.type] || 0;
+        if (!n) { return; }
+        var b = document.createElement('span');
+        b.className = 'er-chip-n';
+        b.textContent = n;
+        c.appendChild(b);
+    });
 
     function hideDoneOn() { return hideDoneBtn.getAttribute('aria-pressed') === 'true'; }
 
@@ -378,6 +413,24 @@
         clearTimeout(filterTimer);
         filterTimer = setTimeout(applyFilter, 120);
     });
+    filterInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && filterInput.value) {
+            e.stopPropagation();            // don't also close the drawer
+            filterInput.value = '';
+            clearTimeout(filterTimer);
+            applyFilter();
+        }
+    });
+    // press "/" anywhere to jump to the filter
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) { return; }
+        var el = document.activeElement;
+        var tag = el && el.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (el && el.isContentEditable)) { return; }
+        e.preventDefault();
+        filterInput.focus();
+        filterInput.select();
+    });
     hideDoneBtn.addEventListener('click', function () {
         hideDoneBtn.setAttribute('aria-pressed', hideDoneOn() ? 'false' : 'true');
         applyFilter();
@@ -418,14 +471,26 @@
 
     var STORE_KEY = 'er_toc_open';
 
-    function setOpen(open, persist) {
+    function drawerFocusables() {
+        return Array.prototype.slice
+            .call(sidebar.querySelectorAll('a[href], button, [tabindex]:not([tabindex="-1"])'))
+            .filter(function (el) { return el.offsetParent !== null; });
+    }
+
+    function setOpen(open, userAction) {
         body.classList.toggle('toc-open', open);
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         overlay.hidden = !open;
         sidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
         if ('inert' in HTMLElement.prototype) { sidebar.inert = !open; }
-        if (persist !== false) {
+        if (userAction !== false) {
             try { localStorage.setItem(STORE_KEY, open ? '1' : '0'); } catch (e) {}
+            if (open) {
+                var f = drawerFocusables();
+                if (f.length) { f[0].focus(); }
+            } else if (sidebar.contains(document.activeElement)) {
+                toggle.focus();
+            }
         }
     }
 
@@ -439,6 +504,16 @@
     overlay.addEventListener('click', function () { setOpen(false); });
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && body.classList.contains('toc-open')) { setOpen(false); }
+    });
+
+    // trap Tab focus inside the drawer while it is open
+    sidebar.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') { return; }
+        var f = drawerFocusables();
+        if (!f.length) { return; }
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
 
     sidebar.addEventListener('click', function (e) {

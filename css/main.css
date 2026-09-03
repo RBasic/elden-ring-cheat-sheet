@@ -161,7 +161,7 @@ p { color: var(--text); }
 /* ----- profile selector ---------------------------------------------------- */
 
 .profile { float: none !important; margin-left: auto; }
-.profile .input-append { display: inline-flex; gap: 6px; margin: 0; }
+.profile .input-append { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 
 #profiles,
 .profile select {
@@ -173,6 +173,12 @@ p { color: var(--text); }
     border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .profile { margin-left: 0; width: 100%; }
+    .profile .input-append { width: 100%; }
+    #profiles { flex: 1 1 8rem; min-width: 0; }
 }
 
 .btn {
@@ -330,6 +336,13 @@ body.toc-open #tocToggle .toc-x { display: inline; }
     border-color: var(--heading);
     font-weight: 600;
 }
+.er-chip-n {
+    margin-left: 0.4rem;
+    font-weight: 400;
+    opacity: 0.55;
+    font-variant-numeric: tabular-nums;
+}
+.er-chip.is-on .er-chip-n { opacity: 0.75; }
 
 .er-filebtn input[type="file"] {
     position: absolute;
