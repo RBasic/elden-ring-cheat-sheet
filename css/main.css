@@ -94,33 +94,37 @@ h3 > a:hover { color: #fff; }
 #tabPlaythrough h3 { margin: 0; padding: 0; border: 0; scroll-margin-top: 6.5rem; }
 #tabPlaythrough h3 > a { color: var(--heading); }
 
-/* "Recomendations:" label + the loose Level/Upgrades line that follows it
-   (their original HTML puts <h4> inside <p>, so the browser splits them into
-   siblings inside .region-body — we style them as one meta strip) */
-.region-body > p:empty { display: none; }
-
-.region-body > h4 {
-    display: block;
+/* recommended level / weapon-upgrade tier, shown as pills under the title */
+.region-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0.75rem;
+}
+.region-pill {
+    font-size: 12px;
+    color: var(--accent);
+    border: 1px solid rgba(255, 171, 25, 0.55);
+    border-radius: 999px;
+    padding: 2px 9px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.region-pill b {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-right: 0.35rem;
+    opacity: 0.85;
+}
+.region-meta-sub {
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-dim);
-    margin: 0.85rem 0 0.15rem;
 }
-/* the value line: "<strong>Level:</strong> 1 ~ 10 <strong>Upgrades:</strong> …" */
-.region-body > h4 + strong,
-.region-body > strong,
-.region-body > div > strong {
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 13px;
-    margin-left: 0.15rem;
-}
-.region-body > div {
-    color: var(--text-dim);
-    font-size: 13px;
-}
+.region-meta-sub:not(:first-child) { margin-left: 0.5rem; }
 
 h4 {
     display: inline-block;

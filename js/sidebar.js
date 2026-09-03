@@ -74,6 +74,13 @@
         if (collapsed.has(h3.id)) { section.classList.add('is-collapsed'); }
     });
 
+    // put the region sections in the same order as the sidebar nav
+    // (the source HTML has a few regions out of progression order)
+    Array.prototype.forEach.call(sidebar.querySelectorAll('a[href^="#"]'), function (a) {
+        var sec = pane.querySelector('.region[data-region="' + esc(a.getAttribute('href').slice(1)) + '"]');
+        if (sec) { pane.appendChild(sec); }
+    });
+
     var sections = Array.prototype.slice.call(pane.querySelectorAll('.region'));
 
     function persistCollapsed() { setJSON(COLLAPSE_KEY, Array.prototype.slice.call(collapsed)); }
