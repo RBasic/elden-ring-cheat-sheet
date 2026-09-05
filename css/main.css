@@ -635,6 +635,37 @@ li.choice.is-notpicked > label.checkbox > input[type="checkbox"] {
     border-color: var(--danger-fg);
 }
 
+/* ----- annotation lines --------------------------------------------- */
+/* a checkable task (.note-head) followed by non-task detail lines
+   (.note): the notes carry a data-id so the sequential counter in
+   main.js doesn't stop, but main.js + sidebar.js skip them, and their
+   checkbox is hidden. Links inside stay clickable. */
+
+li.note-head { border-bottom: 0; }
+
+li.note {
+    margin-left: 1.75rem;
+    border-bottom: 0;
+    border-left: 2px solid var(--border-strong);
+}
+/* close the group off with a rule above the next real task */
+li.note + li[data-id]:not(.note) { border-top: 1px solid var(--border); }
+
+li.note > label.checkbox {
+    cursor: default;
+    min-height: 0;
+    gap: 0;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.92em;
+    color: var(--text-dim);
+}
+li.note > label.checkbox:hover { background: none; opacity: 1; }
+li.note > label.checkbox > input[type="checkbox"] { display: none; }
+li.note > label.checkbox a { color: var(--link); }
+/* a note can never be "done" — ignore any stale checked state */
+li.note > label.checkbox { opacity: 1 !important; }
+li.note > label.checkbox > .checkbox-text { text-decoration: none !important; }
+
 /* ----- custom checkboxes (label.checkbox is injected by main.js) ------- */
 
 label.checkbox {

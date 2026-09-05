@@ -139,12 +139,12 @@
         typeCounts[ty || ''] = (typeCounts[ty || ''] || 0) + 1;
     });
     // the "All" count must line up with main.js calculateTotals(): the
-    // "pick one" label is not a task, and each exclusive choice group
-    // counts as a single item however many options it has
+    // "pick one" label and "note" annotation lines are not tasks, and
+    // each exclusive choice group counts as one item whatever its options
     var choiceOpts = Array.prototype.slice.call(pane.querySelectorAll('li.choice[data-choice-group]'));
     var choiceGroupCount = new Set(choiceOpts.map(function (li) { return li.dataset.choiceGroup; })).size;
     typeCounts[''] = everyItem.length
-        - pane.querySelectorAll('li.choice-head').length
+        - pane.querySelectorAll('li.choice-head, li.note').length
         - (choiceOpts.length - choiceGroupCount);
 
     // put the region sections in the same order as the sidebar nav

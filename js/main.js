@@ -27,6 +27,12 @@
         populateProfiles();
 
         $('input[type="checkbox"]').click(function() {
+            // annotation lines carry a hidden checkbox only so the sequential
+            // counter doesn't stop — clicking one must do nothing
+            if ($(this).closest('li').hasClass('note')) {
+                $(this).prop('checked', false);
+                return;
+            }
             var id = $(this).attr('id');
             var isChecked = profiles[profilesKey][profiles.current].checklistData[id] = $(this).prop('checked');
             //_gaq.push(['_trackEvent', 'Checkbox', (isChecked ? 'Check' : 'Uncheck'), id]);
@@ -157,8 +163,8 @@
                         break;
                     }
                     var li = checkbox.closest('li');
-                    if (li.hasClass('choice-head')) {
-                        continue;   // a "pick one of the following" label, not a task
+                    if (li.hasClass('choice-head') || li.hasClass('note')) {
+                        continue;   // a label / annotation line, not a task
                     }
                     var grp = li.attr('data-choice-group');
                     if (grp) {
