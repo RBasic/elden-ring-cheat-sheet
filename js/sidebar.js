@@ -561,6 +561,13 @@
         // land keyboard focus on the region heading, not back on the toggle
         var h = document.getElementById(id);
         if (h) { h.focus({ preventScroll: true }); }
+        // let the browser make the jump, then drop the #hash so it can't
+        // override the saved reading position on the next reload
+        setTimeout(function () {
+            if (location.hash === '#' + id) {
+                history.replaceState(null, '', location.pathname + location.search);
+            }
+        }, 0);
     });
 
     /* ------------------------------------------------------------------ *
@@ -622,5 +629,73 @@
         window.addEventListener('resize', onScroll);
         onScroll();
     }
+
+    /* ------------------------------------------------------------------ *
+     *  7. Remember the reading position across reloads
+     *  (collapsed regions are already persisted under 'er_collapsed')
+     * ------------------------------------------------------------------ */
+
+    var SCROLL_KEY = 'er_scroll';
+    if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+
+    var anchorables = Array.prototype.slice.call(
+        pane.querySelectorAll('h3[id], li[data-id]')
+    );
+    function readingLine() { return (toolbar.offsetHeight || 0) + 8; }
+
+    // the heading / row sitting closest to just under the sticky toolbar
+    function topAnchor() {
+        var line = readingLine();
+        var best = null, bestTop = -Infinity;
+        for (var k = 0; k < anchorables.length; k++) {
+            var el = anchorables[k];
+            if (el.hidden) { continue; }
+            var rects = el.getClientRects();
+            if (!rects.length) { continue; }
+            var t = rects[0].top;
+            if (t <= line + 1 && t > bestTop) { best = el; bestTop = t; }
+        }
+        if (!best) { return null; }
+        return { id: best.id || best.getAttribute('data-id'),
+                 delta: Math.round(line - bestTop) };
+    }
+
+    var saveScrollTimer;
+    function saveScroll() {
+        if (body.classList.contains('er-filtering')) { return; }
+        var a = topAnchor();
+        if (a && a.id) { setJSON(SCROLL_KEY, a); }
+    }
+    window.addEventListener('scroll', function () {
+        clearTimeout(saveScrollTimer);
+        saveScrollTimer = setTimeout(saveScroll, 300);
+    }, { passive: true });
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') { saveScroll(); }
+    });
+    window.addEventListener('pagehide', saveScroll);
+
+    var scrollRestored = false;
+    function restoreScroll() {
+        if (scrollRestored) { return; }
+        scrollRestored = true;
+        if (location.hash || window.pageYOffset > 4) { return; }  // deep link / already moving
+        var a = getJSON(SCROLL_KEY, null);
+        if (!a || !a.id) { return; }
+        var el = pane.querySelector('[data-id="' + esc(a.id) + '"]') ||
+                 document.getElementById(a.id);
+        if (!el) { return; }
+        var sec = el.closest && el.closest('.region');
+        if (sec && sec.classList.contains('is-collapsed')) {
+            el = sec.querySelector('h3[id]') || el;   // row is folded away: aim at its heading
+        }
+        var y = el.getBoundingClientRect().top + window.pageYOffset
+              - readingLine() + (a.delta || 0);
+        window.scrollTo(0, Math.max(0, y));
+    }
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () { requestAnimationFrame(restoreScroll); });
+    }
+    setTimeout(restoreScroll, 500);   // fallback if web fonts are slow or absent
 
 })();
