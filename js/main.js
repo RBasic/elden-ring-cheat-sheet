@@ -156,35 +156,40 @@
             $('[id^="' + type + '_totals_"]').each(function(index) {
                 var regex = new RegExp(type + '_totals_(.*)');
                 var i = parseInt(this.id.match(regex)[1]);
+
+                // count the region's tasks by walking its actual <li> items —
+                // no assumption that data-ids run 1..N without gaps
+                var $h3 = $(this).closest('h3');
+                var $region = $h3.closest('.region');   // added by sidebar.js
+                var $items = $region.length
+                    ? $region.find('li[data-id]')
+                    : $h3.nextUntil('h3').find('li[data-id]');   // pre-sidebar fallback
+
                 var count = 0, checked = 0, countedGroups = {};
-                for (var j = 1; ; j++) {
-                    var checkbox = $('#' + type + '_' + i + '_' + j);
-                    if (checkbox.length == 0) {
-                        break;
-                    }
-                    var li = checkbox.closest('li');
+                $items.each(function() {
+                    var li = $(this);
                     if (li.hasClass('choice-head') || li.hasClass('note')) {
-                        continue;   // a label / annotation line, not a task
+                        return;   // a label / annotation line, not a task
                     }
                     var grp = li.attr('data-choice-group');
                     if (grp) {
-                        if (countedGroups[grp]) { continue; }   // one exclusive group counts once
+                        if (countedGroups[grp]) { return; }   // one exclusive group counts once
                         countedGroups[grp] = true;
                         count++;
-                        overallCount++;
-                        if ($('li[data-choice-group="' + grp + '"] input[type="checkbox"]:checked').length) {
+                        if ($items.filter('[data-choice-group="' + grp + '"]')
+                                  .find('input[type="checkbox"]:checked').length) {
                             checked++;
-                            overallChecked++;
                         }
-                        continue;
+                        return;
                     }
                     count++;
-                    overallCount++;
-                    if (checkbox.prop('checked')) {
+                    if (li.find('> label > input[type="checkbox"]').prop('checked')) {
                         checked++;
-                        overallChecked++;
                     }
-                }
+                });
+                overallCount += count;
+                overallChecked += checked;
+
                 var pct, headerLabel, navLabel, addCls, removeCls;
                 if (count == 0) {
                     headerLabel = navLabel = ''; addCls = ''; removeCls = 'done in_progress';
