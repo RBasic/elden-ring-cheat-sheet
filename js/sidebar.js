@@ -94,10 +94,13 @@
         h3.parentNode.insertBefore(section, h3);
         h3.tabIndex = -1;   // focusable via nav clicks, not in the tab order
 
+        var navA = sidebar.querySelector('a[href="#' + esc(h3.id) + '"]');
+        var regionName = (navA ? navA.textContent : h3.textContent).replace(/\s+/g, ' ').trim();
+
         var cbtn = document.createElement('button');
         cbtn.type = 'button';
         cbtn.className = 'region-collapse';
-        cbtn.setAttribute('aria-label', 'Collapse or expand this region');
+        cbtn.setAttribute('aria-label', 'Collapse or expand ' + regionName);
         cbtn.setAttribute('aria-expanded', collapsed.has(h3.id) ? 'false' : 'true');
         head.appendChild(cbtn);
         head.appendChild(h3);
@@ -135,7 +138,14 @@
         if (ty) { li.dataset.type = ty; }
         typeCounts[ty || ''] = (typeCounts[ty || ''] || 0) + 1;
     });
-    typeCounts[''] = everyItem.length;
+    // the "All" count must line up with main.js calculateTotals(): the
+    // "pick one" label is not a task, and each exclusive choice group
+    // counts as a single item however many options it has
+    var choiceOpts = Array.prototype.slice.call(pane.querySelectorAll('li.choice[data-choice-group]'));
+    var choiceGroupCount = new Set(choiceOpts.map(function (li) { return li.dataset.choiceGroup; })).size;
+    typeCounts[''] = everyItem.length
+        - pane.querySelectorAll('li.choice-head').length
+        - (choiceOpts.length - choiceGroupCount);
 
     // put the region sections in the same order as the sidebar nav
     // (the source HTML has a few regions out of progression order)
@@ -178,7 +188,7 @@
             '</span>' +
             '<span class="er-progress-pct">0%</span>' +
             '<input id="erFilter" type="search" placeholder="Filter tasks…  ( / )" ' +
-                'title="Keyboard shortcut: /" autocomplete="off">' +
+                'aria-label="Filter tasks" title="Keyboard shortcut: /" autocomplete="off">' +
         '</div>' +
         '<div class="er-row er-actions">' +
             '<button type="button" id="erHideDone" aria-pressed="false">Hide done</button>' +
@@ -208,6 +218,7 @@
 
     var noResults = document.createElement('p');
     noResults.className = 'er-no-results';
+    noResults.setAttribute('role', 'status');
     noResults.textContent = 'No task matches this filter.';
     noResults.hidden = true;
     pane.appendChild(noResults);
@@ -505,7 +516,6 @@
     function setOpen(open, userAction) {
         body.classList.toggle('toc-open', open);
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        overlay.hidden = !open;
         sidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
         if ('inert' in HTMLElement.prototype) { sidebar.inert = !open; }
         if (userAction !== false) {

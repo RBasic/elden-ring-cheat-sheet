@@ -135,7 +135,6 @@ h2 {
 }
 
 h3 { font-size: 21px; font-weight: 400; margin: 1.5rem 0 0.5rem; }
-h3 > a:hover { color: var(--heading-hover); }
 
 /* region titles (Playthrough tab only) */
 #tabPlaythrough h3 {
@@ -181,7 +180,6 @@ h3 > a:hover { color: var(--heading-hover); }
     text-transform: uppercase;
     color: var(--text-dim);
 }
-.region-meta-sub:not(:first-child) { margin-left: 0.5rem; }
 
 h4 {
     display: inline-block;
@@ -601,12 +599,6 @@ li[data-id] {
 }
 li[data-id]:last-child { border-bottom: 0; }
 
-/* nested sub-items */
-li[data-id] li[data-id] {
-    margin-left: 1.75rem;
-    border-bottom: 0;
-}
-
 /* ----- "pick one" choice groups ------------------------------------- */
 
 /* the "Two choices here:" line — a label, not a task */
@@ -714,6 +706,9 @@ li[data-id]:has(> label.checkbox > input:checked) label.checkbox a {
 
 span[id*="_totals_"] {
     display: inline-block;
+    /* never inherit the Cinzel display face from the region <h3> */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
     font-size: 11.5px;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -774,11 +769,24 @@ span[id*="_totals_"] {
 .modal-backdrop,
 .modal-backdrop.fade.in { opacity: 0.7; }
 
+/* replaces the mobile modal rule that bootstrap-responsive.min.css used to
+   carry (base bootstrap centres a fixed 560px box via negative margins,
+   which overflows a phone screen) */
+@media (max-width: 640px) {
+    .modal {
+        top: 1rem;
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+        margin: 0;
+    }
+}
+
 /* ----- print -------------------------------------------------------------- */
 
 @media print {
     html, body, body.dark-mode { background: #fff; color: #000; }
-    .navbar, #intro, input[type="checkbox"], .done, .in_progress,
+    .navbar, input[type="checkbox"], .done, .in_progress,
     #tocToggle, #tocOverlay, #erToolbar { display: none; }
     .container { max-width: none; padding: 0; }
     #tocSidebar {
