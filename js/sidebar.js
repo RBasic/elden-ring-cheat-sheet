@@ -156,7 +156,8 @@
 
     var sections = Array.prototype.slice.call(pane.querySelectorAll('.region'));
 
-    function persistCollapsed() { setJSON(COLLAPSE_KEY, Array.prototype.slice.call(collapsed)); }
+    // NB: Array.prototype.slice.call(aSet) is [] — a Set isn't array-like
+    function persistCollapsed() { setJSON(COLLAPSE_KEY, Array.from(collapsed)); }
 
     function setCollapsed(section, state) {
         section.classList.toggle('is-collapsed', state);
