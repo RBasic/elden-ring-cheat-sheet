@@ -78,7 +78,17 @@
      * ------------------------------------------------------------------ */
 
     var COLLAPSE_KEY = 'er_collapsed';
-    var collapsed = new Set(getJSON(COLLAPSE_KEY, []));
+    function allRegionIds() {
+        return Array.prototype.map.call(
+            pane.querySelectorAll('h3[id]'), function (h) { return h.id; }
+        );
+    }
+    var storedCollapsed = getJSON(COLLAPSE_KEY, null);
+    var collapsed = new Set(storedCollapsed || []);
+    if (storedCollapsed === null) {          // first visit: start fully folded
+        allRegionIds().forEach(function (id) { collapsed.add(id); });
+        persistCollapsed();
+    }
 
     Array.prototype.slice.call(pane.querySelectorAll('h3[id]')).forEach(function (h3) {
         var section = document.createElement('section');
@@ -356,6 +366,9 @@
                     localStorage.setItem(STORAGE, JSON.stringify(js));
                 }
             } catch (e) {}
+            // also start fresh: every region folded, back to the top
+            try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify(allRegionIds())); } catch (e) {}
+            try { localStorage.removeItem(SCROLL_KEY); } catch (e) {}
             location.reload();
         });
     }
