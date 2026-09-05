@@ -474,13 +474,23 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 }
 .region:first-of-type { margin-top: 1rem; }
 .region.is-collapsed { padding-bottom: 0; }
-.region.is-collapsed .region-body { display: none; }
-body.er-filtering .region-body { display: block !important; }
 .region[hidden] { display: none; }
 li[data-id][hidden] { display: none; }
 
+/* animated fold: the wrapper is a 1-row grid that shrinks to 0fr;
+   the inner div clips the content while it slides */
+.region-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.3s ease;
+}
+.region.is-collapsed .region-body { grid-template-rows: 0fr; }
+body.er-filtering .region.is-collapsed .region-body { grid-template-rows: 1fr; }
+.region-inner { overflow: hidden; min-height: 0; }
+
 .region-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.4rem;
     cursor: pointer;
@@ -489,6 +499,24 @@ li[data-id][hidden] { display: none; }
     margin-left: -0.35rem;
 }
 .region-head:hover { background: var(--hover); }
+.region-head h3 { min-width: 0; }
+
+/* per-region bulk toggles, pushed to the right of the heading */
+.region-actions { display: flex; gap: 0.3rem; flex: 0 0 auto; margin-left: auto; }
+.region-actions button {
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text-dim);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.region-actions button:hover { color: var(--heading); border-color: var(--border-strong); }
+.region-actions button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 .region-collapse {
     flex: 0 0 auto;
     width: 1.5rem;
@@ -587,7 +615,7 @@ body.toc-open #tocSidebar { transform: translateX(0); }
 
 ul { list-style-type: none; margin-left: 0; }
 
-.region-body > ul {
+.region-inner > ul {
     margin: 0 0 0.5rem;
     padding: 0;
 }
@@ -684,7 +712,7 @@ label.checkbox {
     text-indent: 0;
     cursor: pointer;
     border-radius: 6px;
-    transition: background 0.12s ease, opacity 0.12s ease;
+    transition: background 0.12s ease, opacity 0.18s ease, color 0.18s ease;
 }
 label.checkbox:hover { background: var(--hover); }
 
@@ -711,7 +739,8 @@ label.checkbox input[type="checkbox"]:checked {
     border-color: var(--heading);
     background: rgba(255, 209, 25, 0.16);
 }
-label.checkbox input[type="checkbox"]:checked::after {
+/* the tick is always in the DOM so it can animate in/out */
+label.checkbox input[type="checkbox"]::after {
     content: "";
     position: absolute;
     left: 5px;
@@ -720,7 +749,13 @@ label.checkbox input[type="checkbox"]:checked::after {
     height: 10px;
     border: solid var(--heading);
     border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    transform: rotate(45deg) scale(0);
+    opacity: 0;
+    transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.12s ease;
+}
+label.checkbox input[type="checkbox"]:checked::after {
+    transform: rotate(45deg) scale(1);
+    opacity: 1;
 }
 
 /* completed row: fade + strike the text, keep the tick crisp */
@@ -824,19 +859,64 @@ span[id*="_totals_"] {
 @media print {
     html, body, body.dark-mode { background: #fff; color: #000; }
     .navbar, input[type="checkbox"], .done, .in_progress,
-    #tocToggle, #tocOverlay, #erToolbar { display: none; }
+    #tocToggle, #tocOverlay, #erToolbar, #erToTop { display: none; }
     .container { max-width: none; padding: 0; }
     #tocSidebar {
         position: static; transform: none; width: auto; height: auto;
         box-shadow: none; border: 0; padding: 0; overflow: visible;
     }
-    .region.is-collapsed .region-body { display: block; }
+    .region-body { grid-template-rows: 1fr; }
+    .region-inner { overflow: visible; }
     .region-head { cursor: auto; }
-    .region-collapse, .er-no-results { display: none; }
+    .region-collapse, .region-actions, .er-no-results { display: none; }
     a { color: #000; text-decoration: underline; }
     a[target="_blank"]::after { content: ""; }
     label.checkbox { min-height: 0; padding: 2px 0; }
     li[data-id]:has(> label.checkbox > input:checked) > label.checkbox { opacity: 1; }
     .tab-content > .tab-pane { display: block; }
     .tab-pane { page-break-after: always; }
+}
+
+/* ----- back to top ----------------------------------------------------- */
+
+#erToTop {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 30;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--heading);
+    background: var(--bg-raised);
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    box-shadow: 0 6px 18px -6px var(--shadow);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease,
+                background 0.12s ease;
+}
+#erToTop.is-visible { opacity: 1; visibility: visible; transform: none; }
+#erToTop:hover { background: var(--hover-strong); }
+#erToTop:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+
+/* ----- reduced motion ------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .region-body,
+    label.checkbox,
+    label.checkbox input[type="checkbox"],
+    label.checkbox input[type="checkbox"]::after,
+    .region-collapse::before,
+    #erToTop {
+        transition-duration: 0.01ms !important;
+    }
 }

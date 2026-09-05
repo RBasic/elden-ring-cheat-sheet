@@ -100,6 +100,9 @@
 
         var bodyWrap = document.createElement('div');
         bodyWrap.className = 'region-body';
+        var bodyInner = document.createElement('div');
+        bodyInner.className = 'region-inner';
+        bodyWrap.appendChild(bodyInner);
 
         h3.parentNode.insertBefore(section, h3);
         h3.tabIndex = -1;   // focusable via nav clicks, not in the tab order
@@ -121,9 +124,12 @@
         while (section.nextSibling) {
             var sib = section.nextSibling;
             if (sib.nodeType === 1 && sib.matches('h3[id], section.region')) { break; }
-            bodyWrap.appendChild(sib);
+            bodyInner.appendChild(sib);
         }
-        if (collapsed.has(h3.id)) { section.classList.add('is-collapsed'); }
+        if (collapsed.has(h3.id)) {
+            section.classList.add('is-collapsed');
+            if ('inert' in HTMLElement.prototype) { bodyInner.inert = true; }
+        }
     });
 
     /* tag each task with a rough category for the filter chips */
@@ -173,11 +179,16 @@
         section.classList.toggle('is-collapsed', state);
         var cbtn = section.querySelector('.region-collapse');
         if (cbtn) { cbtn.setAttribute('aria-expanded', state ? 'false' : 'true'); }
+        var inner = section.querySelector('.region-inner');
+        if (inner && 'inert' in HTMLElement.prototype && !body.classList.contains('er-filtering')) {
+            inner.inert = state;
+        }
         if (state) { collapsed.add(section.dataset.region); }
         else { collapsed.delete(section.dataset.region); }
     }
 
     pane.addEventListener('click', function (e) {
+        if (e.target.closest('.region-actions')) { return; }   // its own buttons
         var head = e.target.closest('.region-head');
         if (!head) { return; }
         var section = head.closest('.region');
@@ -439,7 +450,17 @@
         var hideDone = hideDoneOn();
         var anyActive = !!term || hideDone || !!typeFilter;
         // text search or a category chip force-opens the regions
-        body.classList.toggle('er-filtering', !!term || !!typeFilter);
+        var forceOpen = !!term || !!typeFilter;
+        body.classList.toggle('er-filtering', forceOpen);
+        // while a region is force-opened its content must stay reachable
+        if ('inert' in HTMLElement.prototype) {
+            sections.forEach(function (s) {
+                var inner = s.querySelector('.region-inner');
+                if (inner) {
+                    inner.inert = !forceOpen && s.classList.contains('is-collapsed');
+                }
+            });
+        }
         var totalVisible = 0;
         sections.forEach(function (section) {
             var visible = 0;
@@ -711,5 +732,83 @@
         document.fonts.ready.then(function () { requestAnimationFrame(restoreScroll); });
     }
     setTimeout(restoreScroll, 500);   // fallback if web fonts are slow or absent
+
+    /* ------------------------------------------------------------------ *
+     *  8. Per-region Toggle / Clear (staggered) + back-to-top button
+     * ------------------------------------------------------------------ */
+
+    var prefersReducedMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // walk a list of checkboxes, clicking the ones not already at `target`
+    // one every `delay` ms so the check marks cascade
+    function bulkSet(inputs, target) {
+        var delay = prefersReducedMotion ? 0 : 12;
+        if (!delay) {
+            inputs.forEach(function (cb) { if (cb.checked !== target) { cb.click(); } });
+            return;
+        }
+        var i = 0;
+        (function step() {
+            while (i < inputs.length && inputs[i].checked === target) { i++; }
+            if (i >= inputs.length) { return; }
+            inputs[i++].click();
+            setTimeout(step, delay);
+        })();
+    }
+
+    sections.forEach(function (section) {
+        var head = section.querySelector('.region-head');
+        if (!head) { return; }
+
+        var actions = document.createElement('div');
+        actions.className = 'region-actions';
+        var toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.textContent = 'Toggle';
+        toggleBtn.title = 'Check all / uncheck all in this region';
+        var clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.textContent = 'Clear';
+        clearBtn.title = 'Uncheck everything in this region';
+        actions.appendChild(toggleBtn);
+        actions.appendChild(clearBtn);
+        head.appendChild(actions);
+
+        function taskInputs() {
+            return Array.prototype.slice.call(section.querySelectorAll(
+                'li[data-id]:not(.note):not(.choice-head):not(.choice) > label > input[type="checkbox"]'
+            ));
+        }
+        function run(target) {
+            if (section.classList.contains('is-collapsed')) {   // reveal the cascade
+                setCollapsed(section, false);
+                persistCollapsed();
+                refreshCollapseAllLabel();
+            }
+            bulkSet(taskInputs(), target);
+        }
+        toggleBtn.addEventListener('click', function () {
+            var inputs = taskInputs();
+            var allChecked = inputs.length > 0 &&
+                inputs.every(function (c) { return c.checked; });
+            run(!allChecked);
+        });
+        clearBtn.addEventListener('click', function () { run(false); });
+    });
+
+    // back-to-top: fades in past a scroll threshold
+    var toTop = document.createElement('button');
+    toTop.id = 'erToTop';
+    toTop.type = 'button';
+    toTop.setAttribute('aria-label', 'Back to top');
+    toTop.textContent = '↑';
+    body.appendChild(toTop);
+    window.addEventListener('scroll', function () {
+        toTop.classList.toggle('is-visible', window.pageYOffset > 400);
+    }, { passive: true });
+    toTop.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    });
 
 })();
