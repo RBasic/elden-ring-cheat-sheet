@@ -545,38 +545,6 @@ label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }
     .er-quest-badge[data-q="yura"]     { --q: #c69a1e; --qt: #2c2405; }
 }
 
-/* side-quest filter tray */
-.er-chip-quests { margin-left: 0.35rem; }
-.er-chip-quests.is-on {
-    color: var(--bg);
-    background: var(--link);
-    border-color: var(--link);
-    font-weight: 600;
-}
-.er-chip-quests[aria-expanded="true"] {
-    box-shadow: 0 0 0 2px var(--link) inset;
-}
-.er-quests[hidden] { display: none; }
-.er-quests { flex-wrap: wrap; align-items: flex-start; }
-.er-quest-tray {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    flex: 1 1 auto;
-}
-.er-quest-tray-pill { margin-right: 0; }
-.er-quest-clear {
-    flex: 0 0 auto;
-    padding: 2px 8px;
-    font-size: 11px;
-    color: var(--text-dim);
-    background: none;
-    border: none;
-    text-decoration: underline;
-    cursor: pointer;
-}
-.er-quest-clear:hover { color: var(--heading); }
-
 /* ----- achievement note under a row -------------------------------- */
 
 .er-ach {

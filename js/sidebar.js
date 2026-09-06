@@ -305,13 +305,6 @@
                 'title="Hide the (Optional) steps and drop them from the totals">Optional</button>' +
             '<button type="button" class="er-chip er-chip-ach" id="erAchOnly" aria-pressed="false" ' +
                 'title="Show only the steps needed for achievements">Ach. only</button>' +
-            '<button type="button" class="er-chip er-chip-quests" id="erQuestToggle" ' +
-                'aria-expanded="false" aria-pressed="false" ' +
-                'title="Filter by one or more side quests">Quests</button>' +
-        '</div>' +
-        '<div class="er-row er-quests" hidden>' +
-            '<div class="er-quest-tray" role="group" aria-label="Filter by side quest (combine freely)"></div>' +
-            '<button type="button" class="er-quest-clear" hidden>Clear</button>' +
         '</div>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
@@ -700,56 +693,24 @@
         }
     });
 
-    /* side-quest filter: a collapsible tray of toggle pills, plus the inline
-       row badges — all multi-select and combinable with the category chips */
-    var questRow = toolbar.querySelector('.er-quests');
-    var questTray = toolbar.querySelector('.er-quest-tray');
-    var questClearBtn = toolbar.querySelector('.er-quest-clear');
-    var questToggle = document.getElementById('erQuestToggle');
-    var questCountEl = document.createElement('span');
-    questCountEl.className = 'er-chip-n';
-    questToggle.appendChild(questCountEl);
-
+    /* side-quest filter: the inline row badges are the whole UI — click one
+       to add its quest to the filter, click an active one to drop it.
+       Multi-select and combinable with the category chips. */
     var questPresent = {};
     pane.querySelectorAll('li[data-quest]').forEach(function (li) {
         (li.getAttribute('data-quest') || '').trim().split(/\s+/).forEach(function (s) {
             if (s) { questPresent[s] = true; }
         });
     });
-    var presentQuests = Object.keys(ER_QUESTS)
-        .filter(function (s) { return questPresent[s]; })
-        .sort(function (a, b) { return ER_QUESTS[a].localeCompare(ER_QUESTS[b]); });
-    presentQuests.forEach(function (s) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'er-quest-badge er-quest-tray-pill';
-        b.dataset.q = s;
-        b.textContent = ER_QUESTS[s];
-        questTray.appendChild(b);
-    });
-    if (!presentQuests.length) { questToggle.hidden = true; }
     // forget any persisted slug that is no longer in the DOM
     Array.from(questFilters).forEach(function (s) {
         if (!questPresent[s]) { questFilters.delete(s); }
     });
 
     function syncQuestUI() {
-        var n = questFilters.size;
-        questTray.querySelectorAll('.er-quest-tray-pill').forEach(function (b) {
+        pane.querySelectorAll('.er-quest-badge').forEach(function (b) {
             b.classList.toggle('is-active', questFilters.has(b.dataset.q));
         });
-        pane.querySelectorAll('.er-quest-badge:not(.er-quest-tray-pill)').forEach(function (b) {
-            b.classList.toggle('is-active', questFilters.has(b.dataset.q));
-        });
-        questToggle.classList.toggle('is-on', n > 0);
-        questToggle.setAttribute('aria-pressed', n > 0 ? 'true' : 'false');
-        questCountEl.textContent = n ? String(n) : '';
-        questClearBtn.hidden = n === 0;
-    }
-    function setQuestTrayOpen(open) {
-        questRow.hidden = !open;
-        questToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        syncToolbarHeight();
     }
     function toggleQuest(slug) {
         if (!slug) { return; }
@@ -759,23 +720,9 @@
         syncQuestUI();
         applyFilter();
     }
-
-    questToggle.addEventListener('click', function () {
-        setQuestTrayOpen(questRow.hidden);
-    });
-    questTray.addEventListener('click', function (e) {
-        var b = e.target.closest('.er-quest-tray-pill');
-        if (b) { toggleQuest(b.dataset.q); }
-    });
-    questClearBtn.addEventListener('click', function () {
-        questFilters.clear();
-        setJSON('er_quests', []);
-        syncQuestUI();
-        applyFilter();
-    });
     pane.addEventListener('click', function (e) {
         var b = e.target.closest('.er-quest-badge');
-        if (!b || b.classList.contains('er-quest-tray-pill')) { return; }
+        if (!b) { return; }
         e.preventDefault();
         toggleQuest(b.dataset.q);
     });
@@ -783,7 +730,6 @@
     // reflect persisted category / quest picks before the first filter pass
     syncTypeUI();
     syncQuestUI();
-    if (questFilters.size) { setQuestTrayOpen(true); }
     if (typeFilters.size || questFilters.size) { applyFilter(); }
 
     /* ------------------------------------------------------------------ *
