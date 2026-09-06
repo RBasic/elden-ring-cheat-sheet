@@ -289,24 +289,29 @@
                 'title="Restore progress from a save file">Restore' +
                 '<input type="file" id="erImportFile" ' +
                 'accept=".txt,.json,application/json,text/plain"></label>' +
-            '<select id="erQuest" aria-label="Filter by side quest">' +
-                '<option value="">Side quest…</option></select>' +
             '<span id="erBackupMsg" role="status"></span>' +
         '</div>' +
         '<div class="er-row er-chips">' +
-            '<span class="er-chip-radios" role="radiogroup" aria-label="Filter by category">' +
-                '<button type="button" class="er-chip is-on" role="radio" aria-checked="true" tabindex="0" data-type="">All</button>' +
-                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="boss">Boss</button>' +
-                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="dungeon">Dungeons</button>' +
-                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="loot">Loot</button>' +
-                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="npc">NPCs</button>' +
-                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="grace">Graces</button>' +
-                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="shop">Shops</button>' +
+            '<span class="er-chip-types" role="group" aria-label="Filter by category (combine freely)">' +
+                '<button type="button" class="er-chip is-on" aria-pressed="true" data-type="">All</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="boss">Boss</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="dungeon">Dungeons</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="loot">Loot</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="npc">NPCs</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="grace">Graces</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="shop">Shops</button>' +
             '</span>' +
             '<button type="button" class="er-chip er-chip-opt" id="erOptional" aria-pressed="false" ' +
                 'title="Hide the (Optional) steps and drop them from the totals">Optional</button>' +
             '<button type="button" class="er-chip er-chip-ach" id="erAchOnly" aria-pressed="false" ' +
                 'title="Show only the steps needed for achievements">Ach. only</button>' +
+            '<button type="button" class="er-chip er-chip-quests" id="erQuestToggle" ' +
+                'aria-expanded="false" aria-pressed="false" ' +
+                'title="Filter by one or more side quests">Quests</button>' +
+        '</div>' +
+        '<div class="er-row er-quests" hidden>' +
+            '<div class="er-quest-tray" role="group" aria-label="Filter by side quest (combine freely)"></div>' +
+            '<button type="button" class="er-quest-clear" hidden>Clear</button>' +
         '</div>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
@@ -468,10 +473,11 @@
     var filterInput = document.getElementById('erFilter');
     var hideDoneBtn = document.getElementById('erHideDone');
     var chipRow = toolbar.querySelector('.er-chips');
-    var chips = Array.prototype.slice.call(chipRow.querySelectorAll('.er-chip[role="radio"]'));
+    var chips = Array.prototype.slice.call(chipRow.querySelectorAll('.er-chip[data-type]'));
+    var allChip = chips.filter(function (c) { return c.dataset.type === ''; })[0];
     var optionalBtn = document.getElementById('erOptional');
-    var typeFilter = '';
-    var questFilter = '';
+    var typeFilters = new Set(getJSON('er_types', []) || []);
+    var questFilters = new Set(getJSON('er_quests', []) || []);
 
     // show how many tasks each category holds
     var allChipN = null;
@@ -587,15 +593,24 @@
         CSS.highlights.set('er-match', new window.Highlight(...ranges));
     }
 
+    function liMatchesQuest(li) {
+        var arr = (li.getAttribute('data-quest') || '').split(/\s+/);
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i] && questFilters.has(arr[i])) { return true; }
+        }
+        return false;
+    }
+
     function applyFilter() {
         var term = filterInput.value.trim().toLowerCase();
         var hideDone = hideDoneOn();
         var hideOpt = optionalHidden();
         var achMode = achOnly();
-        var qf = questFilter;
-        var anyActive = !!term || hideDone || !!typeFilter || hideOpt || achMode || !!qf;
-        // text search, category chip or a side-quest pick force-opens the regions
-        var forceOpen = !!term || !!typeFilter || !!qf;
+        var typeOn = typeFilters.size;
+        var questOn = questFilters.size;
+        var anyActive = !!term || hideDone || !!typeOn || hideOpt || achMode || !!questOn;
+        // text search, a category chip or a side-quest pick force-opens the regions
+        var forceOpen = !!term || !!typeOn || !!questOn;
         body.classList.toggle('er-filtering', forceOpen);
         // while a region is force-opened its content must stay reachable
         if ('inert' in HTMLElement.prototype) {
@@ -611,14 +626,13 @@
             var visible = 0;
             itemsOf(section).forEach(function (li) {
                 var matchText = !term || li._erText.indexOf(term) !== -1;
-                var matchType = !typeFilter || li.dataset.type === typeFilter;
+                var matchType = !typeOn || typeFilters.has(li.dataset.type);
                 var done = !!li.querySelector('input[type="checkbox"]:checked');
                 var optOut = hideOpt && li.hasAttribute('data-optional');
                 var achOut = achMode && !li.hasAttribute('data-ach') &&
                     !li.classList.contains('note') && !li.classList.contains('choice-head') &&
                     !li.classList.contains('choice');
-                var matchQuest = !qf ||
-                    (' ' + (li.getAttribute('data-quest') || '') + ' ').indexOf(' ' + qf + ' ') !== -1;
+                var matchQuest = !questOn || liMatchesQuest(li);
                 var show = matchText && matchType && matchQuest && !(hideDone && done) && !optOut && !achOut;
                 li.hidden = !show;
                 if (show) { visible++; }
@@ -658,27 +672,26 @@
         applyFilter();
     });
 
-    function selectChip(chip) {
-        typeFilter = chip.dataset.type;
+    // category chips are independent toggles now — check Boss + Loot together,
+    // etc. "All" is the clear-all shortcut and lights up when nothing is picked.
+    function syncTypeUI() {
         chips.forEach(function (c) {
-            var on = c === chip;
+            var on = c === allChip ? typeFilters.size === 0 : typeFilters.has(c.dataset.type);
             c.classList.toggle('is-on', on);
-            c.setAttribute('aria-checked', on ? 'true' : 'false');
-            c.tabIndex = on ? 0 : -1;
+            c.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
+    }
+    function toggleType(chip) {
+        if (chip === allChip) { typeFilters.clear(); }
+        else if (typeFilters.has(chip.dataset.type)) { typeFilters.delete(chip.dataset.type); }
+        else { typeFilters.add(chip.dataset.type); }
+        setJSON('er_types', Array.from(typeFilters));
+        syncTypeUI();
         applyFilter();
     }
     chipRow.addEventListener('click', function (e) {
-        var chip = e.target.closest('.er-chip[role="radio"]');
-        if (chip) { selectChip(chip); }
-    });
-    chipRow.addEventListener('keydown', function (e) {
-        var i = chips.indexOf(e.target);
-        if (i === -1) { return; }
-        var next = null;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next = chips[(i + 1) % chips.length]; }
-        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { next = chips[(i - 1 + chips.length) % chips.length]; }
-        if (next) { e.preventDefault(); selectChip(next); next.focus(); }
+        var chip = e.target.closest('.er-chip[data-type]');
+        if (chip) { toggleType(chip); }
     });
 
     document.addEventListener('change', function (e) {
@@ -687,39 +700,91 @@
         }
     });
 
-    /* side-quest filter: <select> + clickable pills */
-    var questSelect = document.getElementById('erQuest');
+    /* side-quest filter: a collapsible tray of toggle pills, plus the inline
+       row badges — all multi-select and combinable with the category chips */
+    var questRow = toolbar.querySelector('.er-quests');
+    var questTray = toolbar.querySelector('.er-quest-tray');
+    var questClearBtn = toolbar.querySelector('.er-quest-clear');
+    var questToggle = document.getElementById('erQuestToggle');
+    var questCountEl = document.createElement('span');
+    questCountEl.className = 'er-chip-n';
+    questToggle.appendChild(questCountEl);
+
     var questPresent = {};
     pane.querySelectorAll('li[data-quest]').forEach(function (li) {
         (li.getAttribute('data-quest') || '').trim().split(/\s+/).forEach(function (s) {
             if (s) { questPresent[s] = true; }
         });
     });
-    Object.keys(ER_QUESTS)
+    var presentQuests = Object.keys(ER_QUESTS)
         .filter(function (s) { return questPresent[s]; })
-        .sort(function (a, b) { return ER_QUESTS[a].localeCompare(ER_QUESTS[b]); })
-        .forEach(function (s) {
-            var o = document.createElement('option');
-            o.value = s; o.textContent = ER_QUESTS[s];
-            questSelect.appendChild(o);
-        });
-    if (!questSelect.options.length || questSelect.options.length === 1) { questSelect.hidden = true; }
+        .sort(function (a, b) { return ER_QUESTS[a].localeCompare(ER_QUESTS[b]); });
+    presentQuests.forEach(function (s) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'er-quest-badge er-quest-tray-pill';
+        b.dataset.q = s;
+        b.textContent = ER_QUESTS[s];
+        questTray.appendChild(b);
+    });
+    if (!presentQuests.length) { questToggle.hidden = true; }
+    // forget any persisted slug that is no longer in the DOM
+    Array.from(questFilters).forEach(function (s) {
+        if (!questPresent[s]) { questFilters.delete(s); }
+    });
 
-    function setQuestFilter(slug) {
-        questFilter = slug || '';
-        if (questSelect.value !== questFilter) { questSelect.value = questFilter; }
-        pane.querySelectorAll('.er-quest-badge').forEach(function (b) {
-            b.classList.toggle('is-active', !!questFilter && b.dataset.q === questFilter);
+    function syncQuestUI() {
+        var n = questFilters.size;
+        questTray.querySelectorAll('.er-quest-tray-pill').forEach(function (b) {
+            b.classList.toggle('is-active', questFilters.has(b.dataset.q));
         });
+        pane.querySelectorAll('.er-quest-badge:not(.er-quest-tray-pill)').forEach(function (b) {
+            b.classList.toggle('is-active', questFilters.has(b.dataset.q));
+        });
+        questToggle.classList.toggle('is-on', n > 0);
+        questToggle.setAttribute('aria-pressed', n > 0 ? 'true' : 'false');
+        questCountEl.textContent = n ? String(n) : '';
+        questClearBtn.hidden = n === 0;
+    }
+    function setQuestTrayOpen(open) {
+        questRow.hidden = !open;
+        questToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        syncToolbarHeight();
+    }
+    function toggleQuest(slug) {
+        if (!slug) { return; }
+        if (questFilters.has(slug)) { questFilters.delete(slug); }
+        else { questFilters.add(slug); }
+        setJSON('er_quests', Array.from(questFilters));
+        syncQuestUI();
         applyFilter();
     }
-    questSelect.addEventListener('change', function () { setQuestFilter(questSelect.value); });
+
+    questToggle.addEventListener('click', function () {
+        setQuestTrayOpen(questRow.hidden);
+    });
+    questTray.addEventListener('click', function (e) {
+        var b = e.target.closest('.er-quest-tray-pill');
+        if (b) { toggleQuest(b.dataset.q); }
+    });
+    questClearBtn.addEventListener('click', function () {
+        questFilters.clear();
+        setJSON('er_quests', []);
+        syncQuestUI();
+        applyFilter();
+    });
     pane.addEventListener('click', function (e) {
         var b = e.target.closest('.er-quest-badge');
-        if (!b) { return; }
+        if (!b || b.classList.contains('er-quest-tray-pill')) { return; }
         e.preventDefault();
-        setQuestFilter(questFilter === b.dataset.q ? '' : b.dataset.q);
+        toggleQuest(b.dataset.q);
     });
+
+    // reflect persisted category / quest picks before the first filter pass
+    syncTypeUI();
+    syncQuestUI();
+    if (questFilters.size) { setQuestTrayOpen(true); }
+    if (typeFilters.size || questFilters.size) { applyFilter(); }
 
     /* ------------------------------------------------------------------ *
      *  5. Collapsible region sidebar

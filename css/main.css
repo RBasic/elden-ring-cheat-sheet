@@ -403,8 +403,7 @@ body.toc-open #tocToggle .toc-x { display: inline; }
     border-color: var(--accent);
     font-weight: 600;
 }
-.er-chip.is-on,
-.er-chip[aria-checked="true"] {
+.er-chip.is-on {
     color: var(--bg);
     background: var(--heading);
     border-color: var(--heading);
@@ -418,8 +417,8 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 }
 .er-chip.is-on .er-chip-n { opacity: 0.75; }
 
-/* the radio chips sit in their own group; the Optional toggle is separate */
-.er-chip-radios { display: contents; }
+/* the category chips sit in their own group; Optional / Ach / Quests are separate */
+.er-chip-types { display: contents; }
 .er-chip-opt { margin-left: 0.5rem; }
 .er-chip-opt[aria-pressed="true"] {
     text-decoration: line-through;
@@ -492,16 +491,37 @@ label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }
 }
 .er-quest-badge:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
 
-#erQuest {
-    flex: 0 0 auto;
-    max-width: 9rem;
-    padding: 4px 6px;
-    font-size: 12px;
-    color: var(--text);
-    background: var(--bg-raised);
-    border: 1px solid var(--border);
-    border-radius: 999px;
+/* side-quest filter tray */
+.er-chip-quests { margin-left: 0.35rem; }
+.er-chip-quests.is-on {
+    color: var(--bg);
+    background: var(--link);
+    border-color: var(--link);
+    font-weight: 600;
 }
+.er-chip-quests[aria-expanded="true"] {
+    box-shadow: 0 0 0 2px var(--link) inset;
+}
+.er-quests[hidden] { display: none; }
+.er-quests { flex-wrap: wrap; align-items: flex-start; }
+.er-quest-tray {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    flex: 1 1 auto;
+}
+.er-quest-tray-pill { margin-right: 0; }
+.er-quest-clear {
+    flex: 0 0 auto;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.er-quest-clear:hover { color: var(--heading); }
 
 /* ----- achievement note under a row -------------------------------- */
 
