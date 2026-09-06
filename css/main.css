@@ -449,6 +449,36 @@ body.hide-optional li[data-optional] { display: none !important; }
 /* keep the tag readable on a completed (struck-through) row */
 label.checkbox > .checkbox-text .er-opt-badge { text-decoration: none; }
 
+/* ----- achievement note under a row -------------------------------- */
+
+.er-ach {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.5rem 2.75rem;   /* sit under the row text, past the checkbox */
+    padding: 0.3rem 0.6rem;
+    border-left: 2px solid rgba(255, 209, 25, 0.3);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+.er-ach-icon {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    background: var(--bg-sunken);
+}
+.er-ach-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.er-ach-name {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+.er-ach-desc { line-height: 1.4; }
+li[data-id][hidden] .er-ach { display: none; }
+
 .er-filebtn input[type="file"] {
     position: absolute;
     width: 1px; height: 1px;

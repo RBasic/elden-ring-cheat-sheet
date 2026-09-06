@@ -177,6 +177,30 @@
         - pane.querySelectorAll('li.choice-head, li.note').length
         - (choiceOpts.length - choiceGroupCount);
 
+    /* drop the achievement it unlocks under a checklist row.
+       Runs before main.js wraps the <li>, so append on its own line —
+       addCheckbox only rewraps line 0. */
+    (function () {
+        var list = window.ER_ACHIEVEMENTS;
+        if (!list || !list.length) { return; }
+        function esch(s) {
+            return String(s).replace(/[&<>"]/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+            });
+        }
+        list.forEach(function (a) {
+            if (!a.task) { return; }
+            var li = pane.querySelector('li[data-id="' + esc(a.task) + '"]');
+            if (!li || li.querySelector('.er-ach')) { return; }
+            li.innerHTML += '\n<div class="er-ach" title="Unlocks the &quot;' + esch(a.name) + '&quot; achievement">' +
+                '<img class="er-ach-icon" src="' + esch(a.image) + '" alt="" width="34" height="34" loading="lazy">' +
+                '<span class="er-ach-txt">' +
+                    '<span class="er-ach-name">' + esch(a.name) + '</span>' +
+                    '<span class="er-ach-desc">' + esch(a.description) + '</span>' +
+                '</span></div>';
+        });
+    })();
+
     // put the region sections in the same order as the sidebar nav
     // (the source HTML has a few regions out of progression order)
     Array.prototype.forEach.call(sidebar.querySelectorAll('a[href^="#"]'), function (a) {

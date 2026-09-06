@@ -1,4 +1,7 @@
-[
+/* Elden Ring achievements, scraped from fextralife's Trophy_and_Achievement_Guide.
+   Kept in sync with data/achievements.json. 'task' = the checklist data-id
+   that unlocks it (null = not tied to a single checklist line). */
+window.ER_ACHIEVEMENTS = [
   { "n": 1, "name": "Elden Ring", "description": "Obtain all trophies", "quality": "Platinum", "gamerscore": 70, "image": "img/achievements/elden_ring.png", "task": null },
   { "n": 2, "name": "Elden Lord", "description": "Achieve the \"Elden Lord\" ending (Endings)", "quality": "Gold", "gamerscore": 50, "image": "img/achievements/elden_lord.png", "task": "playthrough_28_6" },
   { "n": 3, "name": "Age of the Stars", "description": "Achieve the \"Age of the Stars\" ending (Endings)", "quality": "Gold", "gamerscore": 50, "image": "img/achievements/age_of_stars.png", "task": "playthrough_28_2" },
@@ -41,4 +44,4 @@
   { "n": 40, "name": "Roundtable Hold", "description": "Arrive at Roundtable Hold", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/roundtable_hold.png", "task": "playthrough_2_16" },
   { "n": 41, "name": "Great Rune", "description": "Restore the power of a Great Rune", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/great_rune.png", "task": "playthrough_5_36" },
   { "n": 42, "name": "Erdtree Aflame", "description": "Use kindling to set the Erdtree Aflame (Melina)", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/erdtree_aflame.png", "task": "playthrough_25_3" }
-]
+];
