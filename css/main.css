@@ -464,7 +464,10 @@ label.checkbox > .checkbox-text .er-opt-badge,
 label.checkbox > .checkbox-text .er-hard-badge,
 label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }
 
-/* side-quest pills — clickable, filter to that quest */
+/* side-quest pills — clickable, filter to that quest.
+   Each quest carries its own accent (--q, from the character's look) used
+   for the label + ring when idle and the fill when active; --qt is the
+   text colour that sits on that fill. */
 .er-quest-badge {
     display: inline-block;
     margin-right: 0.35rem;
@@ -475,9 +478,9 @@ label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }
     line-height: 1.4;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--link);
+    color: var(--q, var(--link));
     background: var(--bg-sunken);
-    border: 1px solid var(--link);
+    border: 1px solid var(--q, var(--link));
     border-radius: 999px;
     vertical-align: 1px;
     white-space: nowrap;
@@ -485,11 +488,62 @@ label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }
 }
 .er-quest-badge:hover { background: var(--hover); }
 .er-quest-badge.is-active {
-    color: var(--bg);
-    background: var(--link);
-    border-color: var(--link);
+    color: var(--qt, var(--bg));
+    background: var(--q, var(--link));
+    border-color: var(--q, var(--link));
 }
-.er-quest-badge:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+.er-quest-badge:focus-visible { outline: 2px solid var(--q, var(--link)); outline-offset: 1px; }
+
+.er-quest-badge[data-q="varre"]     { --q: #e9e5db; --qt: #26221c; }
+.er-quest-badge[data-q="alexander"] { --q: #e79a3c; --qt: #2b1c05; }
+.er-quest-badge[data-q="irina"]     { --q: #e7a0ab; --qt: #3a1a20; }
+.er-quest-badge[data-q="boc"]       { --q: #a79f95; --qt: #232120; }
+.er-quest-badge[data-q="roderika"]  { --q: #db5a52; --qt: #ffffff; }
+.er-quest-badge[data-q="d"]         { --q: #ccbd8c; --qt: #2a2413; }
+.er-quest-badge[data-q="gurranq"]   { --q: #bcb9b0; --qt: #232220; }
+.er-quest-badge[data-q="kenneth"]   { --q: #6d8bd0; --qt: #ffffff; }
+.er-quest-badge[data-q="ranni"]     { --q: #92c6e8; --qt: #122430; }
+.er-quest-badge[data-q="jarbairn"]  { --q: #e4d290; --qt: #2c2510; }
+.er-quest-badge[data-q="blaidd"]    { --q: #90a4b8; --qt: #1c2733; }
+.er-quest-badge[data-q="fia"]       { --q: #aeaac2; --qt: #221f2e; }
+.er-quest-badge[data-q="sellen"]    { --q: #4fa6c6; --qt: #ffffff; }
+.er-quest-badge[data-q="gowry"]     { --q: #c0483d; --qt: #ffffff; }
+.er-quest-badge[data-q="corhyn"]    { --q: #d9b44c; --qt: #2c2205; }
+.er-quest-badge[data-q="gostoc"]    { --q: #9a9060; --qt: #242009; }
+.er-quest-badge[data-q="nepheli"]   { --q: #b07541; --qt: #ffffff; }
+.er-quest-badge[data-q="seluvis"]   { --q: #6576a8; --qt: #ffffff; }
+.er-quest-badge[data-q="yura"]      { --q: #e2b833; --qt: #2c2405; }
+.er-quest-badge[data-q="bernahl"]   { --q: #cf4a44; --qt: #ffffff; }
+.er-quest-badge[data-q="patches"]   { --q: #cf8a54; --qt: #2a1c0a; }
+.er-quest-badge[data-q="rya"]       { --q: #5fb26e; --qt: #0f2a16; }
+.er-quest-badge[data-q="dungeater"] { --q: #a53f36; --qt: #ffffff; }
+.er-quest-badge[data-q="millicent"] { --q: #e5443a; --qt: #ffffff; }
+.er-quest-badge[data-q="boggart"]   { --q: #d97e60; --qt: #2a1509; }
+.er-quest-badge[data-q="latenna"]   { --q: #aeb5b9; --qt: #1f2427; }
+.er-quest-badge[data-q="ensha"]     { --q: #918f88; --qt: #20201d; }
+.er-quest-badge[data-q="rogier"]    { --q: #adb64e; --qt: #242705; }
+.er-quest-badge[data-q="diallos"]   { --q: #a061a6; --qt: #ffffff; }
+.er-quest-badge[data-q="tanith"]    { --q: #ddd6c7; --qt: #2a2620; }
+.er-quest-badge[data-q="gideon"]    { --q: #84929a; --qt: #1e2427; }
+
+/* light theme sits on cream — darken the pale accents so they still read */
+@media (prefers-color-scheme: light) {
+    .er-quest-badge[data-q="varre"]    { --q: #8a8074; --qt: #ffffff; }
+    .er-quest-badge[data-q="boc"]      { --q: #726a60; --qt: #ffffff; }
+    .er-quest-badge[data-q="d"]        { --q: #8f7f45; --qt: #ffffff; }
+    .er-quest-badge[data-q="gurranq"]  { --q: #7c7970; --qt: #ffffff; }
+    .er-quest-badge[data-q="jarbairn"] { --q: #96812f; --qt: #ffffff; }
+    .er-quest-badge[data-q="fia"]      { --q: #6a6780; --qt: #ffffff; }
+    .er-quest-badge[data-q="blaidd"]   { --q: #55697d; --qt: #ffffff; }
+    .er-quest-badge[data-q="latenna"]  { --q: #6d747a; --qt: #ffffff; }
+    .er-quest-badge[data-q="ensha"]    { --q: #5f5d57; --qt: #ffffff; }
+    .er-quest-badge[data-q="tanith"]   { --q: #8b8474; --qt: #ffffff; }
+    .er-quest-badge[data-q="gideon"]   { --q: #55626a; --qt: #ffffff; }
+    .er-quest-badge[data-q="ranni"]    { --q: #3f8fc0; --qt: #ffffff; }
+    .er-quest-badge[data-q="irina"]    { --q: #d16b7c; --qt: #ffffff; }
+    .er-quest-badge[data-q="corhyn"]   { --q: #b8912f; --qt: #ffffff; }
+    .er-quest-badge[data-q="yura"]     { --q: #c69a1e; --qt: #2c2405; }
+}
 
 /* side-quest filter tray */
 .er-chip-quests { margin-left: 0.35rem; }
