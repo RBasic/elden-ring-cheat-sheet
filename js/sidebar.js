@@ -149,10 +149,15 @@
     }
     var typeCounts = {};
     var everyItem = Array.prototype.slice.call(pane.querySelectorAll('li[data-id]'));
+    var optionalCount = 0;
     everyItem.forEach(function (li) {
         var ty = classify(li.textContent);
         if (ty) { li.dataset.type = ty; }
         typeCounts[ty || ''] = (typeCounts[ty || ''] || 0) + 1;
+        if (/^\(optional/i.test(li.textContent.trim())) {
+            li.dataset.optional = '';
+            optionalCount++;
+        }
     });
     // the "All" count must line up with main.js calculateTotals(): the
     // "pick one" label and "note" annotation lines are not tasks, and
@@ -223,14 +228,18 @@
                 'accept=".txt,.json,application/json,text/plain"></label>' +
             '<span id="erBackupMsg" role="status"></span>' +
         '</div>' +
-        '<div class="er-row er-chips" role="radiogroup" aria-label="Filter by category">' +
-            '<button type="button" class="er-chip is-on" role="radio" aria-checked="true" tabindex="0" data-type="">All</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="boss">Boss</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="dungeon">Dungeons</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="loot">Loot</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="npc">NPCs</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="grace">Graces</button>' +
-            '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="shop">Shops</button>' +
+        '<div class="er-row er-chips">' +
+            '<span class="er-chip-radios" role="radiogroup" aria-label="Filter by category">' +
+                '<button type="button" class="er-chip is-on" role="radio" aria-checked="true" tabindex="0" data-type="">All</button>' +
+                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="boss">Boss</button>' +
+                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="dungeon">Dungeons</button>' +
+                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="loot">Loot</button>' +
+                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="npc">NPCs</button>' +
+                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="grace">Graces</button>' +
+                '<button type="button" class="er-chip" role="radio" aria-checked="false" tabindex="-1" data-type="shop">Shops</button>' +
+            '</span>' +
+            '<button type="button" class="er-chip er-chip-opt" id="erOptional" aria-pressed="false" ' +
+                'title="Hide the (Optional) steps and drop them from the totals">Optional</button>' +
         '</div>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
@@ -391,10 +400,12 @@
     var filterInput = document.getElementById('erFilter');
     var hideDoneBtn = document.getElementById('erHideDone');
     var chipRow = toolbar.querySelector('.er-chips');
-    var chips = Array.prototype.slice.call(chipRow.querySelectorAll('.er-chip'));
+    var chips = Array.prototype.slice.call(chipRow.querySelectorAll('.er-chip[role="radio"]'));
+    var optionalBtn = document.getElementById('erOptional');
     var typeFilter = '';
 
     // show how many tasks each category holds
+    var allChipN = null;
     chips.forEach(function (c) {
         var n = typeCounts[c.dataset.type] || 0;
         if (!n) { return; }
@@ -402,9 +413,37 @@
         b.className = 'er-chip-n';
         b.textContent = n;
         c.appendChild(b);
+        if (c.dataset.type === '') { allChipN = b; }
     });
+    if (optionalCount) {
+        var ob = document.createElement('span');
+        ob.className = 'er-chip-n';
+        ob.textContent = optionalCount;
+        optionalBtn.appendChild(ob);
+    }
 
     function hideDoneOn() { return hideDoneBtn.getAttribute('aria-pressed') === 'true'; }
+    function optionalHidden() { return optionalBtn.getAttribute('aria-pressed') === 'true'; }
+
+    var OPT_KEY = 'er_hide_optional';
+    function setOptionalHidden(state) {
+        optionalBtn.setAttribute('aria-pressed', state ? 'true' : 'false');
+        body.classList.toggle('hide-optional', state);
+        // keep the "All" volume badge honest
+        if (allChipN) { allChipN.textContent = typeCounts[''] - (state ? optionalCount : 0); }
+        try { localStorage.setItem(OPT_KEY, state ? '1' : '0'); } catch (e) {}
+    }
+    // restore persisted state before the first paint / first count
+    (function () {
+        var stored;
+        try { stored = localStorage.getItem(OPT_KEY); } catch (e) {}
+        if (stored === '1') { setOptionalHidden(true); }
+    })();
+    optionalBtn.addEventListener('click', function () {
+        setOptionalHidden(!optionalHidden());
+        applyFilter();
+        if (window.erRecalcTotals) { window.erRecalcTotals(); }
+    });
 
     // cache each region's task list + a lowercased copy of each task's text
     // (main.js has wrapped the <li> contents by the time this runs)
@@ -448,7 +487,8 @@
     function applyFilter() {
         var term = filterInput.value.trim().toLowerCase();
         var hideDone = hideDoneOn();
-        var anyActive = !!term || hideDone || !!typeFilter;
+        var hideOpt = optionalHidden();
+        var anyActive = !!term || hideDone || !!typeFilter || hideOpt;
         // text search or a category chip force-opens the regions
         var forceOpen = !!term || !!typeFilter;
         body.classList.toggle('er-filtering', forceOpen);
@@ -468,7 +508,8 @@
                 var matchText = !term || li._erText.indexOf(term) !== -1;
                 var matchType = !typeFilter || li.dataset.type === typeFilter;
                 var done = !!li.querySelector('input[type="checkbox"]:checked');
-                var show = matchText && matchType && !(hideDone && done);
+                var optOut = hideOpt && li.hasAttribute('data-optional');
+                var show = matchText && matchType && !(hideDone && done) && !optOut;
                 li.hidden = !show;
                 if (show) { visible++; }
             });
@@ -518,7 +559,7 @@
         applyFilter();
     }
     chipRow.addEventListener('click', function (e) {
-        var chip = e.target.closest('.er-chip');
+        var chip = e.target.closest('.er-chip[role="radio"]');
         if (chip) { selectChip(chip); }
     });
     chipRow.addEventListener('keydown', function (e) {

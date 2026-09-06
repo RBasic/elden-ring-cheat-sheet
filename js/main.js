@@ -133,6 +133,9 @@
 
     });
 
+    // let sidebar.js ask for a recount (e.g. after toggling the Optional filter)
+    window.erRecalcTotals = calculateTotals;
+
     function populateProfiles() {
         $('#profiles').empty();
         $.each(profiles[profilesKey], function(index, value) {
@@ -150,6 +153,9 @@
     }
 
     function calculateTotals() {
+        // when the Optional filter is on, hidden (Optional) rows drop out of
+        // the count; when it's off they count like any other task
+        var hideOptional = document.body.classList.contains('hide-optional');
         $('[id$="_overall_total"]').each(function(index) {
             var type = this.id.match(/(.*)_overall_total/)[1];
             var overallCount = 0, overallChecked = 0;
@@ -170,6 +176,9 @@
                     var li = $(this);
                     if (li.hasClass('choice-head') || li.hasClass('note')) {
                         return;   // a label / annotation line, not a task
+                    }
+                    if (hideOptional && this.hasAttribute('data-optional')) {
+                        return;   // Optional filter on: this row isn't shown, don't count it
                     }
                     var grp = li.attr('data-choice-group');
                     if (grp) {

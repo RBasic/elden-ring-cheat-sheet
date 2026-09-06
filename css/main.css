@@ -418,6 +418,18 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 }
 .er-chip.is-on .er-chip-n { opacity: 0.75; }
 
+/* the radio chips sit in their own group; the Optional toggle is separate */
+.er-chip-radios { display: contents; }
+.er-chip-opt { margin-left: 0.5rem; }
+.er-chip-opt[aria-pressed="true"] {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    opacity: 0.5;
+}
+
+/* Optional filter on: drop the (Optional) rows out of view */
+body.hide-optional li[data-optional] { display: none !important; }
+
 .er-filebtn input[type="file"] {
     position: absolute;
     width: 1px; height: 1px;
