@@ -305,12 +305,6 @@
                 'title="Hide the (Optional) steps and drop them from the totals">Optional</button>' +
             '<button type="button" class="er-chip er-chip-ach" id="erAchOnly" aria-pressed="false" ' +
                 'title="Show only the steps needed for achievements">Ach. only</button>' +
-            '<button type="button" class="er-chip er-quests-toggle" id="erQuestsToggle" ' +
-                'aria-expanded="false" aria-controls="erQuestsWrap" ' +
-                'title="Show or hide the side-quest pills">' +
-                'Quests<span class="er-chip-n" id="erQuestsCount"></span>' +
-                '<span class="er-chevron" aria-hidden="true"></span>' +
-            '</button>' +
         '</div>' +
         '<div class="er-quests-wrap is-collapsed" id="erQuestsWrap">' +
             '<div class="er-quests-inner">' +
@@ -319,7 +313,13 @@
                     '<button type="button" class="er-quest-clear" hidden>Clear</button>' +
                 '</div>' +
             '</div>' +
-        '</div>';
+        '</div>' +
+        '<button type="button" class="er-quests-handle" id="erQuestsHandle" ' +
+            'aria-expanded="false" aria-controls="erQuestsWrap" ' +
+            'title="Show or hide the side-quest pills">' +
+            '<span class="er-chevron" aria-hidden="true"></span>' +
+            '<span class="er-chip-n" id="erQuestsCount"></span>' +
+        '</button>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
     sentinel.setAttribute('aria-hidden', 'true');
@@ -707,14 +707,15 @@
         }
     });
 
-    /* side-quest filter: a row of NPC pills that folds away behind a chevron
-       (same grid animation as the regions), plus the matching inline badges
-       on the rows — multi-select, combinable with the category chips. Click
-       a pill (either place) to add its quest, click an active one to drop it. */
+    /* side-quest filter: a row of NPC pills that folds away with the same grid
+       animation as the regions, driven by the chevron handle on the toolbar's
+       bottom edge; plus the matching inline badges on the rows — multi-select,
+       combinable with the category chips. Click a pill (either place) to add
+       its quest, click an active one to drop it. */
     var questTray = toolbar.querySelector('.er-quest-tray');
     var questClearBtn = toolbar.querySelector('.er-quest-clear');
     var questsWrap = document.getElementById('erQuestsWrap');
-    var questsToggle = document.getElementById('erQuestsToggle');
+    var questsHandle = document.getElementById('erQuestsHandle');
     var questsCount = document.getElementById('erQuestsCount');
     var QUESTS_OPEN_KEY = 'er_quests_open';
 
@@ -748,7 +749,7 @@
             b.classList.toggle('is-active', questFilters.has(b.dataset.q));
         });
         questClearBtn.hidden = n === 0;
-        questsToggle.classList.toggle('is-on', n > 0);   // signal active filters while folded
+        questsHandle.classList.toggle('is-on', n > 0);   // signal active filters while folded
         questsCount.textContent = n ? String(n) : '';
     }
     function toggleQuest(slug) {
@@ -761,7 +762,7 @@
     }
     function setQuestsOpen(open, persist) {
         questsWrap.classList.toggle('is-collapsed', !open);
-        questsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        questsHandle.setAttribute('aria-expanded', open ? 'true' : 'false');
         if (persist !== false) {
             try { localStorage.setItem(QUESTS_OPEN_KEY, open ? '1' : '0'); } catch (e) {}
         }
@@ -779,7 +780,7 @@
         syncQuestUI();
         applyFilter();
     });
-    questsToggle.addEventListener('click', function () {
+    questsHandle.addEventListener('click', function () {
         setQuestsOpen(questsWrap.classList.contains('is-collapsed'));
     });
     // the fold animation changes the sticky-toolbar height — keep --toolbar-h honest

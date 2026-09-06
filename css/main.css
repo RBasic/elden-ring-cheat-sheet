@@ -545,24 +545,34 @@ label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }
     .er-quest-badge[data-q="yura"]     { --q: #c69a1e; --qt: #2c2405; }
 }
 
-/* side-quest pills — fold away behind the chevron toggle in the chip row */
-.er-quests-toggle { margin-left: 0.35rem; }
-.er-quests-toggle.is-on {          /* at least one quest filter is active */
-    color: var(--bg);
-    background: var(--link);
-    border-color: var(--link);
-    font-weight: 600;
+/* side-quest pills fold away; a full-width chevron handle on the bottom
+   edge of the toolbar expands / collapses them */
+.er-quests-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    margin: 0.35rem 0 -0.3rem;
+    padding: 4px 0 5px;
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
 }
+.er-quests-handle:hover { color: var(--heading); }
+.er-quests-handle:focus-visible { outline: 2px solid var(--link); outline-offset: -3px; }
+.er-quests-handle.is-on { color: var(--link); }     /* a quest filter is active while folded */
+.er-quests-handle .er-chip-n { margin-left: 0; }
 .er-chevron {
     display: inline-block;
-    margin-left: 0.35rem;
-    border: 4px solid transparent;
+    border: 5px solid transparent;
     border-top-color: currentColor;
     border-bottom: 0;
-    vertical-align: 2px;
     transition: transform 0.2s ease;
 }
-.er-quests-toggle[aria-expanded="true"] .er-chevron { transform: rotate(180deg); }
+.er-quests-handle[aria-expanded="true"] .er-chevron { transform: rotate(180deg); }
 
 .er-quests-wrap {
     display: grid;
