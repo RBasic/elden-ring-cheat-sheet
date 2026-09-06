@@ -430,6 +430,25 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 /* Optional filter on: drop the (Optional) rows out of view */
 body.hide-optional li[data-optional] { display: none !important; }
 
+/* the "OPTIONAL" tag that replaces the leading "(Optional …)" text */
+.er-opt-badge {
+    display: inline-block;
+    margin-right: 0.45rem;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--bg-sunken);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    vertical-align: 1px;
+    white-space: nowrap;
+}
+/* keep the tag readable on a completed (struck-through) row */
+label.checkbox > .checkbox-text .er-opt-badge { text-decoration: none; }
+
 .er-filebtn input[type="file"] {
     position: absolute;
     width: 1px; height: 1px;

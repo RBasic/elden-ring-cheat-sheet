@@ -151,13 +151,22 @@
     var everyItem = Array.prototype.slice.call(pane.querySelectorAll('li[data-id]'));
     var optionalCount = 0;
     everyItem.forEach(function (li) {
-        var ty = classify(li.textContent);
-        if (ty) { li.dataset.type = ty; }
-        typeCounts[ty || ''] = (typeCounts[ty || ''] || 0) + 1;
-        if (/^\(optional/i.test(li.textContent.trim())) {
+        // "(Optional …)" leading text -> a small badge + data-optional flag
+        var raw = li.textContent;
+        var om = raw.match(/^\s*\(optional([^)]*)\)/i);
+        var forClassify = om ? raw.replace(/^\s*\(optional[^)]*\)\s*/i, '') : raw;
+        if (om) {
+            var extra = om[1].replace(/^[\s,]+/, '').replace(/\s*!+\s*$/, '').trim();
+            li.innerHTML = li.innerHTML.replace(
+                /^(\s*)\(optional[^)]*\)\s*/i,
+                '$1<span class="er-opt-badge">Optional' + (extra ? ' · ' + extra : '') + '</span> '
+            );
             li.dataset.optional = '';
             optionalCount++;
         }
+        var ty = classify(forClassify);
+        if (ty) { li.dataset.type = ty; }
+        typeCounts[ty || ''] = (typeCounts[ty || ''] || 0) + 1;
     });
     // the "All" count must line up with main.js calculateTotals(): the
     // "pick one" label and "note" annotation lines are not tasks, and
