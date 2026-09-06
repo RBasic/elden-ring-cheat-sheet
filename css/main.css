@@ -476,7 +476,15 @@ label.checkbox > .checkbox-text .er-opt-badge { text-decoration: none; }
     text-transform: uppercase;
     color: var(--accent);
 }
-.er-ach-desc { line-height: 1.4; }
+.er-ach-desc {
+    line-height: 1.4;
+    /* the "Legendary …" descriptions are long — clamp, full text on hover */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 li[data-id][hidden] .er-ach { display: none; }
 
 .er-filebtn input[type="file"] {

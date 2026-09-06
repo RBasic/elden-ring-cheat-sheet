@@ -192,7 +192,7 @@
             if (!a.task) { return; }
             var li = pane.querySelector('li[data-id="' + esc(a.task) + '"]');
             if (!li || li.querySelector('.er-ach')) { return; }
-            li.innerHTML += '\n<div class="er-ach" title="Unlocks the &quot;' + esch(a.name) + '&quot; achievement">' +
+            li.innerHTML += '\n<div class="er-ach" title="' + esch(a.name + ' — ' + a.description) + '">' +
                 '<img class="er-ach-icon" src="' + esch(a.image) + '" alt="" width="34" height="34" loading="lazy">' +
                 '<span class="er-ach-txt">' +
                     '<span class="er-ach-name">' + esch(a.name) + '</span>' +
