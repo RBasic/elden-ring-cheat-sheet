@@ -150,19 +150,20 @@
     var typeCounts = {};
     var everyItem = Array.prototype.slice.call(pane.querySelectorAll('li[data-id]'));
     var optionalCount = 0;
+    var QUALIFIER_RE = /^(\s*)\(\s*(optional|hard)[^)]*\)\s*/i;
     everyItem.forEach(function (li) {
-        // "(Optional …)" leading text -> a small badge + data-optional flag
+        // leading "(Optional …)" / "(hard …)" text -> small badge(s)
         var raw = li.textContent;
-        var om = raw.match(/^\s*\(optional([^)]*)\)/i);
-        var forClassify = om ? raw.replace(/^\s*\(optional[^)]*\)\s*/i, '') : raw;
-        if (om) {
-            var extra = om[1].replace(/^[\s,]+/, '').replace(/\s*!+\s*$/, '').trim();
-            li.innerHTML = li.innerHTML.replace(
-                /^(\s*)\(optional[^)]*\)\s*/i,
-                '$1<span class="er-opt-badge">Optional' + (extra ? ' · ' + extra : '') + '</span> '
-            );
-            li.dataset.optional = '';
-            optionalCount++;
+        var qm = raw.match(QUALIFIER_RE);
+        var forClassify = qm ? raw.replace(QUALIFIER_RE, '') : raw;
+        if (qm) {
+            var isOpt = /\boptional\b/i.test(qm[0]);
+            var isHard = /\bhard\b/i.test(qm[0]);
+            var badges = '';
+            if (isOpt)  { badges += '<span class="er-opt-badge">Optional</span> '; }
+            if (isHard) { badges += '<span class="er-hard-badge">Hard</span> '; }
+            li.innerHTML = li.innerHTML.replace(QUALIFIER_RE, '$1' + badges);
+            if (isOpt) { li.dataset.optional = ''; optionalCount++; }
         }
         var ty = classify(forClassify);
         if (ty) { li.dataset.type = ty; }

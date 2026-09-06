@@ -436,8 +436,9 @@ body.ach-only li[data-id]:not([data-ach]):not(.note):not(.choice-head):not(.choi
     display: none !important;
 }
 
-/* the "OPTIONAL" tag that replaces the leading "(Optional …)" text */
-.er-opt-badge {
+/* the "OPTIONAL" / "HARD" tags that replace the leading "(…)" text */
+.er-opt-badge,
+.er-hard-badge {
     display: inline-block;
     margin-right: 0.45rem;
     padding: 1px 7px;
@@ -445,15 +446,23 @@ body.ach-only li[data-id]:not([data-ach]):not(.note):not(.choice-head):not(.choi
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-dim);
-    background: var(--bg-sunken);
     border: 1px solid var(--border);
     border-radius: 999px;
     vertical-align: 1px;
     white-space: nowrap;
 }
-/* keep the tag readable on a completed (struck-through) row */
-label.checkbox > .checkbox-text .er-opt-badge { text-decoration: none; }
+.er-opt-badge {
+    color: var(--text-dim);
+    background: var(--bg-sunken);
+}
+.er-hard-badge {
+    color: var(--accent);
+    background: rgba(255, 171, 25, 0.12);
+    border-color: rgba(255, 171, 25, 0.5);
+}
+/* keep the tags readable on a completed (struck-through) row */
+label.checkbox > .checkbox-text .er-opt-badge,
+label.checkbox > .checkbox-text .er-hard-badge { text-decoration: none; }
 
 /* ----- achievement note under a row -------------------------------- */
 
