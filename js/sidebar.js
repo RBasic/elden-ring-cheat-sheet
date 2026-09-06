@@ -192,6 +192,7 @@
             if (!a.task) { return; }
             var li = pane.querySelector('li[data-id="' + esc(a.task) + '"]');
             if (!li || li.querySelector('.er-ach')) { return; }
+            li.setAttribute('data-ach', '');   // a task line is achievement-relevant by definition
             li.innerHTML += '\n<div class="er-ach" title="' + esch(a.name + ' — ' + a.description) + '">' +
                 '<img class="er-ach-icon" src="' + esch(a.image) + '" alt="" width="34" height="34" loading="lazy">' +
                 '<span class="er-ach-txt">' +
@@ -273,6 +274,8 @@
             '</span>' +
             '<button type="button" class="er-chip er-chip-opt" id="erOptional" aria-pressed="false" ' +
                 'title="Hide the (Optional) steps and drop them from the totals">Optional</button>' +
+            '<button type="button" class="er-chip er-chip-ach" id="erAchOnly" aria-pressed="false" ' +
+                'title="Show only the steps needed for achievements">Ach. only</button>' +
         '</div>';
     var sentinel = document.createElement('div');
     sentinel.className = 'er-toolbar-sentinel';
@@ -320,6 +323,7 @@
         progWrap.setAttribute('aria-valuenow', p);
         progWrap.classList.toggle('is-done', p === 100);
         refreshChoices();
+        if (typeof syncAllBadge === 'function') { syncAllBadge(); }
     }
     if (overallSpan) {
         new MutationObserver(syncProgress).observe(overallSpan, {
@@ -455,27 +459,61 @@
         optionalBtn.appendChild(ob);
     }
 
+    var achOnlyBtn = document.getElementById('erAchOnly');
+    var overallSpanEl = document.getElementById('playthrough_overall_total');
+    var achCount = pane.querySelectorAll('li[data-id][data-ach]').length;
+    var achChipN = document.createElement('span');
+    achChipN.className = 'er-chip-n';
+    achChipN.textContent = achCount;
+    achOnlyBtn.appendChild(achChipN);
+
     function hideDoneOn() { return hideDoneBtn.getAttribute('aria-pressed') === 'true'; }
     function optionalHidden() { return optionalBtn.getAttribute('aria-pressed') === 'true'; }
+    function achOnly() { return achOnlyBtn.getAttribute('aria-pressed') === 'true'; }
+
+    // "All" volume badge: mirror the live progress count while a
+    // count-changing filter is on, else the plain base total
+    function syncAllBadge() {
+        if (!allChipN) { return; }
+        allChipN.textContent = (achOnly() || optionalHidden())
+            ? (overallSpanEl.getAttribute('data-count') || String(typeCounts['']))
+            : String(typeCounts['']);
+    }
 
     var OPT_KEY = 'er_hide_optional';
     function setOptionalHidden(state) {
         optionalBtn.setAttribute('aria-pressed', state ? 'true' : 'false');
         body.classList.toggle('hide-optional', state);
-        // keep the "All" volume badge honest
-        if (allChipN) { allChipN.textContent = typeCounts[''] - (state ? optionalCount : 0); }
         try { localStorage.setItem(OPT_KEY, state ? '1' : '0'); } catch (e) {}
     }
+
+    var ACH_KEY = 'er_ach_only';
+    function setAchOnly(state) {
+        achOnlyBtn.setAttribute('aria-pressed', state ? 'true' : 'false');
+        achOnlyBtn.classList.toggle('is-on', state);
+        body.classList.toggle('ach-only', state);
+        try { localStorage.setItem(ACH_KEY, state ? '1' : '0'); } catch (e) {}
+    }
+
     // restore persisted state before the first paint / first count
     (function () {
-        var stored;
-        try { stored = localStorage.getItem(OPT_KEY); } catch (e) {}
-        if (stored === '1') { setOptionalHidden(true); }
+        var o, a;
+        try { o = localStorage.getItem(OPT_KEY); a = localStorage.getItem(ACH_KEY); } catch (e) {}
+        if (o === '1') { setOptionalHidden(true); }
+        if (a === '1') { setAchOnly(true); }
     })();
+
     optionalBtn.addEventListener('click', function () {
         setOptionalHidden(!optionalHidden());
         applyFilter();
         if (window.erRecalcTotals) { window.erRecalcTotals(); }
+        syncAllBadge();
+    });
+    achOnlyBtn.addEventListener('click', function () {
+        setAchOnly(!achOnly());
+        applyFilter();
+        if (window.erRecalcTotals) { window.erRecalcTotals(); }
+        syncAllBadge();
     });
 
     // cache each region's task list + a lowercased copy of each task's text
@@ -521,7 +559,8 @@
         var term = filterInput.value.trim().toLowerCase();
         var hideDone = hideDoneOn();
         var hideOpt = optionalHidden();
-        var anyActive = !!term || hideDone || !!typeFilter || hideOpt;
+        var achMode = achOnly();
+        var anyActive = !!term || hideDone || !!typeFilter || hideOpt || achMode;
         // text search or a category chip force-opens the regions
         var forceOpen = !!term || !!typeFilter;
         body.classList.toggle('er-filtering', forceOpen);
@@ -542,7 +581,10 @@
                 var matchType = !typeFilter || li.dataset.type === typeFilter;
                 var done = !!li.querySelector('input[type="checkbox"]:checked');
                 var optOut = hideOpt && li.hasAttribute('data-optional');
-                var show = matchText && matchType && !(hideDone && done) && !optOut;
+                var achOut = achMode && !li.hasAttribute('data-ach') &&
+                    !li.classList.contains('note') && !li.classList.contains('choice-head') &&
+                    !li.classList.contains('choice');
+                var show = matchText && matchType && !(hideDone && done) && !optOut && !achOut;
                 li.hidden = !show;
                 if (show) { visible++; }
             });

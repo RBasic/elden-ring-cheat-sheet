@@ -430,6 +430,12 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 /* Optional filter on: drop the (Optional) rows out of view */
 body.hide-optional li[data-optional] { display: none !important; }
 
+/* "Achievements only": show just the flagged rows (+ notes / choice groups) */
+.er-chip-ach { margin-left: 0.35rem; }
+body.ach-only li[data-id]:not([data-ach]):not(.note):not(.choice-head):not(.choice) {
+    display: none !important;
+}
+
 /* the "OPTIONAL" tag that replaces the leading "(Optional …)" text */
 .er-opt-badge {
     display: inline-block;

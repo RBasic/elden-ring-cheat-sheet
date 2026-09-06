@@ -156,6 +156,8 @@
         // when the Optional filter is on, hidden (Optional) rows drop out of
         // the count; when it's off they count like any other task
         var hideOptional = document.body.classList.contains('hide-optional');
+        // "Achievements only": count only rows flagged data-ach
+        var achOnly = document.body.classList.contains('ach-only');
         $('[id$="_overall_total"]').each(function(index) {
             var type = this.id.match(/(.*)_overall_total/)[1];
             var overallCount = 0, overallChecked = 0;
@@ -176,6 +178,9 @@
                     var li = $(this);
                     if (li.hasClass('choice-head') || li.hasClass('note')) {
                         return;   // a label / annotation line, not a task
+                    }
+                    if (achOnly && !this.hasAttribute('data-ach') && !li.hasClass('choice')) {
+                        return;   // Achievements-only: this row isn't shown, don't count it
                     }
                     if (hideOptional && this.hasAttribute('data-optional')) {
                         return;   // Optional filter on: this row isn't shown, don't count it
