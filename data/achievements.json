@@ -1,5 +1,5 @@
 [
-  { "n": 1, "name": "Elden Ring", "description": "Obtain all trophies", "quality": "Platinum", "gamerscore": 70, "image": "img/achievements/elden_ring.png", "task": null },
+  { "n": 1, "name": "Elden Ring", "description": "Obtain all trophies", "quality": "Platinum", "gamerscore": 70, "image": "img/achievements/elden_ring.png", "task": "playthrough_28_7" },
   { "n": 2, "name": "Elden Lord", "description": "Achieve the \"Elden Lord\" ending (Endings)", "quality": "Gold", "gamerscore": 50, "image": "img/achievements/elden_lord.png", "task": "playthrough_28_6" },
   { "n": 3, "name": "Age of the Stars", "description": "Achieve the \"Age of the Stars\" ending (Endings)", "quality": "Gold", "gamerscore": 50, "image": "img/achievements/age_of_stars.png", "task": "playthrough_28_2" },
   { "n": 4, "name": "Lord of Frenzied Flame", "description": "Achieve the \"Lord of Frenzied Flame\" ending (Endings)", "quality": "Gold", "gamerscore": 50, "image": "img/achievements/lord_of_frenzied_flame.png", "task": "playthrough_28_1" },
@@ -12,7 +12,7 @@
   { "n": 11, "name": "Maliketh the Black Blade", "description": "Defeat Maliketh the Black Blade", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/maliketh_the_black_blade.png", "task": "playthrough_25_38" },
   { "n": 12, "name": "Hoarah Loux the Warrior", "description": "Defeat Hoarah Loux the Warrior", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/hoarah_loux_the_warrior.png", "task": "playthrough_26_4" },
   { "n": 13, "name": "Dragonlord Placidusax", "description": "Defeat Dragonlord Placidusax", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/dragonlord_placidusax.png", "task": "playthrough_25_31" },
-  { "n": 14, "name": "God-Slaying Armament", "description": "Upgrade any armament to its highest stage (Upgrades)", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/god-slaying_armament.png", "task": null },
+  { "n": 14, "name": "God-Slaying Armament", "description": "Upgrade any armament to its highest stage (Upgrades)", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/god-slaying_armament.png", "task": "playthrough_29_26" },
   { "n": 15, "name": "Legendary Armaments", "description": "Acquire all nine legendary weapons", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/legendary_armaments.png", "task": "playthrough_22_23" },
   { "n": 16, "name": "Legendary Ashen Remains", "description": "Acquire all six legendary ashen remains", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/legendary_ashen_remains.png", "task": "playthrough_24_13" },
   { "n": 17, "name": "Legendary Sorceries and Incantations", "description": "Acquire all seven legendary sorceries and incantations", "quality": "Silver", "gamerscore": 30, "image": "img/achievements/legendary_sorceries_and_incantations.png", "task": "playthrough_29_5" },
