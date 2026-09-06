@@ -545,8 +545,37 @@ label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }
     .er-quest-badge[data-q="yura"]     { --q: #c69a1e; --qt: #2c2405; }
 }
 
-/* side-quest pill row — always shown in the toolbar */
-.er-quests { flex-wrap: wrap; align-items: flex-start; }
+/* side-quest pills — fold away behind the chevron toggle in the chip row */
+.er-quests-toggle { margin-left: 0.35rem; }
+.er-quests-toggle.is-on {          /* at least one quest filter is active */
+    color: var(--bg);
+    background: var(--link);
+    border-color: var(--link);
+    font-weight: 600;
+}
+.er-chevron {
+    display: inline-block;
+    margin-left: 0.35rem;
+    border: 4px solid transparent;
+    border-top-color: currentColor;
+    border-bottom: 0;
+    vertical-align: 2px;
+    transition: transform 0.2s ease;
+}
+.er-quests-toggle[aria-expanded="true"] .er-chevron { transform: rotate(180deg); }
+
+.er-quests-wrap {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.28s ease;
+}
+.er-quests-wrap.is-collapsed { grid-template-rows: 0fr; }
+.er-quests-inner { overflow: hidden; min-height: 0; }
+.er-quests {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-top: 0.55rem;
+}
 .er-quest-tray {
     display: flex;
     flex-wrap: wrap;
@@ -1118,6 +1147,8 @@ span[id*="_totals_"] {
     label.checkbox input[type="checkbox"],
     label.checkbox input[type="checkbox"]::after,
     .region-collapse::before,
+    .er-quests-wrap,
+    .er-chevron,
     #erToTop {
         transition-duration: 0.01ms !important;
     }
