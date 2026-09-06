@@ -38,7 +38,7 @@
   { "n": 37, "name": "Elemer of the Briar", "description": "Defeat Elemer of the Briar", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/elemer_of_the_briar.png", "task": "playthrough_17_20" },
   { "n": 38, "name": "Ancestor Spirit", "description": "Defeat Ancestor Spirit", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/ancestor_spirit_trophy.png", "task": "playthrough_11_9" },
   { "n": 39, "name": "Commander Niall", "description": "Defeat Commander Niall", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/commander_niall.png", "task": "playthrough_21_54" },
-  { "n": 40, "name": "Roundtable Hold", "description": "Arrive at Roundtable Hold", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/roundtable_hold.png", "task": "playthrough_2_16" },
+  { "n": 40, "name": "Roundtable Hold", "description": "Arrive at Roundtable Hold", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/roundtable_hold.png", "task": "playthrough_2_17" },
   { "n": 41, "name": "Great Rune", "description": "Restore the power of a Great Rune", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/great_rune.png", "task": "playthrough_5_36" },
   { "n": 42, "name": "Erdtree Aflame", "description": "Use kindling to set the Erdtree Aflame (Melina)", "quality": "Bronze", "gamerscore": 15, "image": "img/achievements/erdtree_aflame.png", "task": "playthrough_25_3" }
 ]
