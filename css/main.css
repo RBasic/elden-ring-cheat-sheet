@@ -758,7 +758,22 @@ li.note > label.checkbox a { color: var(--link); font-style: normal; }
 li.note > label.checkbox { opacity: 1 !important; }
 li.note > label.checkbox > .checkbox-text { text-decoration: none !important; }
 
-/* a note that annotates the task right above it: indent as a sub-item */
+/* a loud warning note */
+li.note.note-warn { border-bottom: 0; }
+li.note.note-warn > label.checkbox {
+    margin: 0.5rem 0;
+    padding: 0.7rem 0.9rem;
+    font-size: 13px;
+    font-style: normal;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    color: var(--danger-fg);
+    background: var(--danger-bg);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius);
+}
+li.note.note-warn > label.checkbox:hover { background: var(--danger-bg); }
 li.note-head + li.note,
 li.note + li.note {
     margin-left: 1.75rem;
