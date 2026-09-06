@@ -147,6 +147,27 @@
         }
         return null;
     }
+    /* side-quest registry: data-quest="ranni blaidd" on a <li> -> pills + filter */
+    var ER_QUESTS = {
+        ranni: 'Ranni', varre: 'Varré', roderika: 'Roderika', d: 'D & Twin',
+        hyetta: 'Hyetta', irina: 'Irina & Edgar', boc: 'Boc', gurranq: 'Gurranq',
+        thops: 'Thops', kenneth: 'Kenneth', alexander: 'Alexander', jarbairn: 'Jar Bairn',
+        blaidd: 'Blaidd', fia: 'Fia', sellen: 'Sellen', gowry: 'Gowry', corhyn: 'Corhyn',
+        gostoc: 'Gostoc', nepheli: 'Nepheli', seluvis: 'Seluvis', yura: 'Yura',
+        bernahl: 'Bernahl', patches: 'Patches', rya: 'Rya', dungeater: 'Dung Eater',
+        millicent: 'Millicent', boggart: 'Boggart', latenna: 'Latenna', ensha: 'Ensha',
+        rogier: 'Rogier', diallos: 'Diallos', tanith: 'Tanith', gideon: 'Gideon'
+    };
+    function questPills(li) {
+        var qv = li.getAttribute('data-quest');
+        if (!qv) { return ''; }
+        return qv.trim().split(/\s+/).map(function (s) {
+            var label = ER_QUESTS[s] || s;
+            return '<button type="button" class="er-quest-badge" data-q="' + s + '" ' +
+                   'title="Filter to the ' + label + ' quest">' + label + '</button>';
+        }).join(' ') + ' ';
+    }
+
     var typeCounts = {};
     var everyItem = Array.prototype.slice.call(pane.querySelectorAll('li[data-id]'));
     var optionalCount = 0;
@@ -164,6 +185,13 @@
             if (isHard) { badges += '<span class="er-hard-badge">Hard</span> '; }
             li.innerHTML = li.innerHTML.replace(QUALIFIER_RE, '$1' + badges);
             if (isOpt) { li.dataset.optional = ''; optionalCount++; }
+        }
+        // side-quest pills, after any Optional/Hard badge
+        var qp = questPills(li);
+        if (qp) {
+            var m = li.innerHTML.match(/^\s*(?:<span class="er-(?:opt|hard)-badge">.*?<\/span>\s*)*/);
+            var pre = m ? m[0] : '';
+            li.innerHTML = pre + qp + li.innerHTML.slice(pre.length);
         }
         var ty = classify(forClassify);
         if (ty) { li.dataset.type = ty; }
@@ -261,6 +289,8 @@
                 'title="Restore progress from a save file">Restore' +
                 '<input type="file" id="erImportFile" ' +
                 'accept=".txt,.json,application/json,text/plain"></label>' +
+            '<select id="erQuest" aria-label="Filter by side quest">' +
+                '<option value="">Side quest…</option></select>' +
             '<span id="erBackupMsg" role="status"></span>' +
         '</div>' +
         '<div class="er-row er-chips">' +
@@ -441,6 +471,7 @@
     var chips = Array.prototype.slice.call(chipRow.querySelectorAll('.er-chip[role="radio"]'));
     var optionalBtn = document.getElementById('erOptional');
     var typeFilter = '';
+    var questFilter = '';
 
     // show how many tasks each category holds
     var allChipN = null;
@@ -561,9 +592,10 @@
         var hideDone = hideDoneOn();
         var hideOpt = optionalHidden();
         var achMode = achOnly();
-        var anyActive = !!term || hideDone || !!typeFilter || hideOpt || achMode;
-        // text search or a category chip force-opens the regions
-        var forceOpen = !!term || !!typeFilter;
+        var qf = questFilter;
+        var anyActive = !!term || hideDone || !!typeFilter || hideOpt || achMode || !!qf;
+        // text search, category chip or a side-quest pick force-opens the regions
+        var forceOpen = !!term || !!typeFilter || !!qf;
         body.classList.toggle('er-filtering', forceOpen);
         // while a region is force-opened its content must stay reachable
         if ('inert' in HTMLElement.prototype) {
@@ -585,7 +617,9 @@
                 var achOut = achMode && !li.hasAttribute('data-ach') &&
                     !li.classList.contains('note') && !li.classList.contains('choice-head') &&
                     !li.classList.contains('choice');
-                var show = matchText && matchType && !(hideDone && done) && !optOut && !achOut;
+                var matchQuest = !qf ||
+                    (' ' + (li.getAttribute('data-quest') || '') + ' ').indexOf(' ' + qf + ' ') !== -1;
+                var show = matchText && matchType && matchQuest && !(hideDone && done) && !optOut && !achOut;
                 li.hidden = !show;
                 if (show) { visible++; }
             });
@@ -651,6 +685,40 @@
         if (e.target && e.target.matches && e.target.matches('#tabPlaythrough li[data-id] input[type="checkbox"]')) {
             if (hideDoneOn()) { applyFilter(); }
         }
+    });
+
+    /* side-quest filter: <select> + clickable pills */
+    var questSelect = document.getElementById('erQuest');
+    var questPresent = {};
+    pane.querySelectorAll('li[data-quest]').forEach(function (li) {
+        (li.getAttribute('data-quest') || '').trim().split(/\s+/).forEach(function (s) {
+            if (s) { questPresent[s] = true; }
+        });
+    });
+    Object.keys(ER_QUESTS)
+        .filter(function (s) { return questPresent[s]; })
+        .sort(function (a, b) { return ER_QUESTS[a].localeCompare(ER_QUESTS[b]); })
+        .forEach(function (s) {
+            var o = document.createElement('option');
+            o.value = s; o.textContent = ER_QUESTS[s];
+            questSelect.appendChild(o);
+        });
+    if (!questSelect.options.length || questSelect.options.length === 1) { questSelect.hidden = true; }
+
+    function setQuestFilter(slug) {
+        questFilter = slug || '';
+        if (questSelect.value !== questFilter) { questSelect.value = questFilter; }
+        pane.querySelectorAll('.er-quest-badge').forEach(function (b) {
+            b.classList.toggle('is-active', !!questFilter && b.dataset.q === questFilter);
+        });
+        applyFilter();
+    }
+    questSelect.addEventListener('change', function () { setQuestFilter(questSelect.value); });
+    pane.addEventListener('click', function (e) {
+        var b = e.target.closest('.er-quest-badge');
+        if (!b) { return; }
+        e.preventDefault();
+        setQuestFilter(questFilter === b.dataset.q ? '' : b.dataset.q);
     });
 
     /* ------------------------------------------------------------------ *
