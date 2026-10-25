@@ -4,6 +4,7 @@
     'use strict';
 
     var body = document.body;
+    var T = window.erT || function (s) { return s; };   // js/i18n.js
     var pane = document.getElementById('tabPlaythrough');
     var toggle = document.getElementById('tocToggle');
     var sidebar = document.getElementById('tocSidebar');
@@ -50,25 +51,25 @@
     // validate a save string and apply it (then reload). msg(text) reports status.
     function restoreProgress(raw, msg) {
         raw = (raw || '').trim();
-        if (!raw) { msg('Empty file.'); return; }
+        if (!raw) { msg(T('Empty file.')); return; }
         var parsed;
         try { parsed = JSON.parse(raw); }
-        catch (e) { msg('Unreadable file (invalid JSON).'); return; }
+        catch (e) { msg(T('Unreadable file (invalid JSON).')); return; }
         if (!parsed || typeof parsed !== 'object' || !parsed.elden_ring_profiles) {
-            msg("This file isn't a valid save."); return;
+            msg(T("This file isn't a valid save.")); return;
         }
         try { localStorage.setItem(STORAGE, raw); }
-        catch (e) { msg("Couldn't write (storage full or blocked)."); return; }
-        msg('✓ Restored — reloading…');
+        catch (e) { msg(T("Couldn't write (storage full or blocked).")); return; }
+        msg(T('✓ Restored — reloading…'));
         setTimeout(function () { location.reload(); }, 700);
     }
     function readFile(file, msg, onText) {
         if (file.text) {
-            file.text().then(onText, function () { msg("Couldn't read the file."); });
+            file.text().then(onText, function () { msg(T("Couldn't read the file.")); });
         } else {
             var fr = new FileReader();
             fr.onload = function () { onText(String(fr.result)); };
-            fr.onerror = function () { msg("Couldn't read the file."); };
+            fr.onerror = function () { msg(T("Couldn't read the file.")); };
             fr.readAsText(file);
         }
     }
@@ -113,7 +114,7 @@
         var cbtn = document.createElement('button');
         cbtn.type = 'button';
         cbtn.className = 'region-collapse';
-        cbtn.setAttribute('aria-label', 'Collapse or expand ' + regionName);
+        cbtn.setAttribute('aria-label', T('Collapse or expand ') + regionName);
         cbtn.setAttribute('aria-expanded', collapsed.has(h3.id) ? 'false' : 'true');
         head.appendChild(cbtn);
         head.appendChild(h3);
@@ -158,31 +159,35 @@
         millicent: 'Millicent', boggart: 'Boggart', latenna: 'Latenna', ensha: 'Ensha',
         rogier: 'Rogier', diallos: 'Diallos', tanith: 'Tanith', gideon: 'Gideon'
     };
+    Object.keys(ER_QUESTS).forEach(function (k) { ER_QUESTS[k] = T(ER_QUESTS[k]); });
     function questPills(li) {
         var qv = li.getAttribute('data-quest');
         if (!qv) { return ''; }
         return qv.trim().split(/\s+/).map(function (s) {
             var label = ER_QUESTS[s] || s;
             return '<button type="button" class="er-quest-badge" data-q="' + s + '" ' +
-                   'title="Filter to the ' + label + ' quest">' + label + '</button>';
+                   'title="' + T('Filter to the %s quest').replace('%s', label) + '">' + label + '</button>';
         }).join(' ') + ' ';
     }
 
     var typeCounts = {};
     var everyItem = Array.prototype.slice.call(pane.querySelectorAll('li[data-id]'));
     var optionalCount = 0;
-    var QUALIFIER_RE = /^(\s*)\(\s*(optional|hard)[^)]*\)\s*/i;
+    // French rows (js/i18n.js) say "(Optionnel, difficile)"
+    var QUALIFIER_RE = /^(\s*)\(\s*(optional|hard|optionnel|difficile)[^)]*\)\s*/i;
     everyItem.forEach(function (li) {
         // leading "(Optional …)" / "(hard …)" text -> small badge(s)
         var raw = li.textContent;
         var qm = raw.match(QUALIFIER_RE);
-        var forClassify = qm ? raw.replace(QUALIFIER_RE, '') : raw;
+        // classify on the English text even when the row is shown in French
+        var en = li._erEn || raw;
+        var forClassify = en.replace(QUALIFIER_RE, '');
         if (qm) {
-            var isOpt = /\boptional\b/i.test(qm[0]);
-            var isHard = /\bhard\b/i.test(qm[0]);
+            var isOpt = /\b(optional|optionnel)\b/i.test(qm[0]);
+            var isHard = /\b(hard|difficile)\b/i.test(qm[0]);
             var badges = '';
-            if (isOpt)  { badges += '<span class="er-opt-badge">Optional</span> '; }
-            if (isHard) { badges += '<span class="er-hard-badge">Hard</span> '; }
+            if (isOpt)  { badges += '<span class="er-opt-badge">' + T('Optional') + '</span> '; }
+            if (isHard) { badges += '<span class="er-hard-badge">' + T('Hard') + '</span> '; }
             li.innerHTML = li.innerHTML.replace(QUALIFIER_RE, '$1' + badges);
             if (isOpt) { li.dataset.optional = ''; optionalCount++; }
         }
@@ -272,51 +277,51 @@
     toolbar.id = 'erToolbar';
     toolbar.innerHTML =
         '<div class="er-row er-row-top">' +
-            '<span class="er-progress" role="progressbar" aria-label="Overall progress"' +
+            '<span class="er-progress" role="progressbar" aria-label="' + T('Overall progress') + '"' +
                 ' aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">' +
                 '<span class="er-progress-fill"></span>' +
             '</span>' +
             '<span class="er-progress-pct">0%</span>' +
-            '<input id="erFilter" type="search" placeholder="Filter tasks…  ( / )" ' +
-                'aria-label="Filter tasks" title="Keyboard shortcut: /" autocomplete="off">' +
+            '<input id="erFilter" type="search" placeholder="' + T('Filter tasks…  ( / )') + '" ' +
+                'aria-label="' + T('Filter tasks') + '" title="' + T('Keyboard shortcut: /') + '" autocomplete="off">' +
         '</div>' +
         '<div class="er-row er-actions">' +
-            '<button type="button" id="erHideDone" aria-pressed="false">Hide done</button>' +
-            '<button type="button" id="erCollapseAll">Collapse all</button>' +
+            '<button type="button" id="erHideDone" aria-pressed="false">' + T('Hide done') + '</button>' +
+            '<button type="button" id="erCollapseAll">' + T('Collapse all') + '</button>' +
             '<button type="button" id="erBackup" ' +
-                'title="Download a save file of my progress">Save</button>' +
+                'title="' + T('Download a save file of my progress') + '">' + T('Save') + '</button>' +
             '<label class="er-filebtn" ' +
-                'title="Restore progress from a save file">Restore' +
+                'title="' + T('Restore progress from a save file') + '">' + T('Restore') +
                 '<input type="file" id="erImportFile" ' +
                 'accept=".txt,.json,application/json,text/plain"></label>' +
             '<span id="erBackupMsg" role="status"></span>' +
         '</div>' +
         '<div class="er-row er-chips">' +
-            '<span class="er-chip-types" role="group" aria-label="Filter by category (combine freely)">' +
-                '<button type="button" class="er-chip is-on" aria-pressed="true" data-type="">All</button>' +
-                '<button type="button" class="er-chip" aria-pressed="false" data-type="boss">Boss</button>' +
-                '<button type="button" class="er-chip" aria-pressed="false" data-type="dungeon">Dungeons</button>' +
-                '<button type="button" class="er-chip" aria-pressed="false" data-type="loot">Loot</button>' +
-                '<button type="button" class="er-chip" aria-pressed="false" data-type="npc">NPCs</button>' +
-                '<button type="button" class="er-chip" aria-pressed="false" data-type="grace">Graces</button>' +
-                '<button type="button" class="er-chip" aria-pressed="false" data-type="shop">Shops</button>' +
+            '<span class="er-chip-types" role="group" aria-label="' + T('Filter by category (combine freely)') + '">' +
+                '<button type="button" class="er-chip is-on" aria-pressed="true" data-type="">' + T('All') + '</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="boss">' + T('Boss') + '</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="dungeon">' + T('Dungeons') + '</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="loot">' + T('Loot') + '</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="npc">' + T('NPCs') + '</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="grace">' + T('Graces') + '</button>' +
+                '<button type="button" class="er-chip" aria-pressed="false" data-type="shop">' + T('Shops') + '</button>' +
             '</span>' +
             '<button type="button" class="er-chip er-chip-opt" id="erOptional" aria-pressed="false" ' +
-                'title="Hide the (Optional) steps and drop them from the totals">Optional</button>' +
+                'title="' + T('Hide the (Optional) steps and drop them from the totals') + '">' + T('Optional') + '</button>' +
             '<button type="button" class="er-chip er-chip-ach" id="erAchOnly" aria-pressed="false" ' +
-                'title="Show only the steps needed for achievements">Ach. only</button>' +
+                'title="' + T('Show only the steps needed for achievements') + '">' + T('Ach. only') + '</button>' +
         '</div>' +
         '<div class="er-quests-wrap is-collapsed" id="erQuestsWrap">' +
             '<div class="er-quests-inner">' +
                 '<div class="er-row er-quests">' +
-                    '<div class="er-quest-tray" role="group" aria-label="Filter by side quest (combine freely)"></div>' +
-                    '<button type="button" class="er-quest-clear" hidden>Clear</button>' +
+                    '<div class="er-quest-tray" role="group" aria-label="' + T('Filter by side quest (combine freely)') + '"></div>' +
+                    '<button type="button" class="er-quest-clear" hidden>' + T('Clear') + '</button>' +
                 '</div>' +
             '</div>' +
         '</div>' +
         '<button type="button" class="er-quests-handle" id="erQuestsHandle" ' +
             'aria-expanded="false" aria-controls="erQuestsWrap" ' +
-            'title="Show or hide the side-quest pills">' +
+            'title="' + T('Show or hide the side-quest pills') + '">' +
             '<span class="er-chevron" aria-hidden="true"></span>' +
             '<span class="er-chip-n" id="erQuestsCount"></span>' +
         '</button>';
@@ -329,7 +334,7 @@
     var noResults = document.createElement('p');
     noResults.className = 'er-no-results';
     noResults.setAttribute('role', 'status');
-    noResults.textContent = 'No task matches this filter.';
+    noResults.textContent = T('No task matches this filter.');
     noResults.hidden = true;
     pane.appendChild(noResults);
     // move the existing sidebar toggle into the toolbar
@@ -414,7 +419,7 @@
     var collapseAllBtn = document.getElementById('erCollapseAll');
     function refreshCollapseAllLabel() {
         var anyOpen = sections.some(function (s) { return !s.classList.contains('is-collapsed'); });
-        collapseAllBtn.textContent = anyOpen ? 'Collapse all' : 'Expand all';
+        collapseAllBtn.textContent = T(anyOpen ? 'Collapse all' : 'Expand all');
     }
     collapseAllBtn.addEventListener('click', function () {
         var anyOpen = sections.some(function (s) { return !s.classList.contains('is-collapsed'); });
@@ -433,7 +438,7 @@
         if (!sticky) { backupMsgTimer = setTimeout(function () { backupMsg.textContent = ''; }, 4000); }
     }
     document.getElementById('erBackup').addEventListener('click', function () {
-        setBackupMsg(downloadProgress() ? '✓ File downloaded' : 'Nothing to save yet');
+        setBackupMsg(T(downloadProgress() ? '✓ File downloaded' : 'Nothing to save yet'));
     });
     var importFile = document.getElementById('erImportFile');
     importFile.addEventListener('change', function () {
@@ -450,13 +455,13 @@
     var profileSelect = document.getElementById('profiles');
     if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-            var name = (profileSelect && profileSelect.value) || 'this profile';
-            if (!window.confirm(
+            var name = (profileSelect && profileSelect.value) || T('this profile');
+            if (!window.confirm(T(
                 '⚠ Reset progress\n\n' +
-                'Every checkbox in the "' + name + '" profile will be unchecked. ' +
+                'Every checkbox in the "%s" profile will be unchecked. ' +
                 'This cannot be undone (use Save first if you want a backup).\n\n' +
                 'Other profiles are not affected.'
-            )) { return; }
+            ).replace('%s', name))) { return; }
             try {
                 var js = JSON.parse(localStorage.getItem(STORAGE) || 'null');
                 var p = js && js.elden_ring_profiles;
@@ -1026,12 +1031,12 @@
         actions.className = 'region-actions';
         var toggleBtn = document.createElement('button');
         toggleBtn.type = 'button';
-        toggleBtn.textContent = 'Toggle';
-        toggleBtn.title = 'Check all / uncheck all in this region';
+        toggleBtn.textContent = T('Toggle');
+        toggleBtn.title = T('Check all / uncheck all in this region');
         var clearBtn = document.createElement('button');
         clearBtn.type = 'button';
-        clearBtn.textContent = 'Clear';
-        clearBtn.title = 'Uncheck everything in this region';
+        clearBtn.textContent = T('Clear');
+        clearBtn.title = T('Uncheck everything in this region');
         actions.appendChild(toggleBtn);
         actions.appendChild(clearBtn);
         head.appendChild(actions);
@@ -1062,7 +1067,7 @@
     var toTop = document.createElement('button');
     toTop.id = 'erToTop';
     toTop.type = 'button';
-    toTop.setAttribute('aria-label', 'Back to top');
+    toTop.setAttribute('aria-label', T('Back to top'));
     toTop.textContent = '↑';
     body.appendChild(toTop);
     window.addEventListener('scroll', function () {

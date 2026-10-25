@@ -1,5 +1,8 @@
 (function($) {
 
+    // UI translation (js/i18n.js loads after this file, so look it up lazily)
+    function T(s) { return window.erT ? window.erT(s) : s; }
+
     var defaultProfiles = {
         'current': 'Default Profile'
     };
@@ -53,7 +56,7 @@
         });
 
         $('#profileAdd').click(function() {
-            $('#profileModalTitle').html('Add Profile');
+            $('#profileModalTitle').text(T('Add Profile'));
             $('#profileModalName').val('');
             $('#profileModalAdd').show();
             $('#profileModalUpdate').hide();
@@ -63,7 +66,7 @@
         });
 
         $('#profileEdit').click(function() {
-            $('#profileModalTitle').html('Edit Profile');
+            $('#profileModalTitle').text(T('Edit Profile'));
             $('#profileModalName').val(profiles.current);
             $('#profileModalAdd').hide();
             $('#profileModalUpdate').show();
@@ -111,7 +114,7 @@
             if (!canDelete()) {
                 return;
             }
-            if (!confirm('Are you sure?')) {
+            if (!confirm(T('Are you sure?'))) {
                 return;
             }
             delete profiles[profilesKey][profiles.current];
@@ -208,7 +211,7 @@
                 if (count == 0) {
                     headerLabel = navLabel = ''; addCls = ''; removeCls = 'done in_progress';
                 } else if (checked == count) {
-                    headerLabel = navLabel = 'DONE'; addCls = 'done'; removeCls = 'in_progress';
+                    headerLabel = navLabel = T('DONE'); addCls = 'done'; removeCls = 'in_progress';
                 } else {
                     pct = Math.round((checked / count) * 100) + '%';
                     navLabel = pct;
