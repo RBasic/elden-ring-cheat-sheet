@@ -1,3 +1,8 @@
+---
+# Jekyll renders this file only to stamp the asset URLs below with the
+# build time (cache busting); no layout is applied.
+layout: null
+---
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -62,8 +67,23 @@
     h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); }
     h2 { font-size: 1.15rem; }
     p { margin: 0; }
+    .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
     .back { font-size: 0.9rem; text-decoration: none; }
     .back:hover { text-decoration: underline; }
+    /* FR / EN switch, same as the cheat sheet: both flags, the current one lit */
+    #langToggle {
+        display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; cursor: pointer;
+        background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px;
+    }
+    #langToggle .lang-flag {
+        display: block; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+        opacity: 0.35; filter: grayscale(0.6); transition: opacity 0.15s, filter 0.15s;
+    }
+    #langToggle[data-current="en"] .lang-flag[data-lang="en"],
+    #langToggle[data-current="fr"] .lang-flag[data-lang="fr"],
+    #langToggle:hover .lang-flag,
+    #langToggle:focus-visible .lang-flag { opacity: 1; filter: none; }
+    #langToggle:focus-visible { outline: 2px solid var(--heading); outline-offset: 2px; }
     .lede { color: var(--text-dim); max-width: 68ch; }
     .stats { display: flex; flex-wrap: wrap; gap: 10px 32px; font-variant-numeric: tabular-nums; }
     .stat b { display: block; font-family: var(--font-display); font-size: 1.7rem; line-height: 1.1; }
@@ -116,7 +136,10 @@
 <body>
 <div class="wrap">
     <header style="display:grid;gap:10px">
-        <a class="back" href="index.html" id="back">← Retour à l'aide-mémoire</a>
+        <div class="topbar">
+            <a class="back" href="index.html" id="back">← Retour à l'aide-mémoire</a>
+            <button type="button" id="langToggle" title="Passer en français" aria-label="Passer en français"><svg class="lang-flag" data-lang="en" viewBox="0 0 60 30" width="26" height="13" aria-hidden="true"><clipPath id="flagUkS"><path d="M0,0v30h60V0z"/></clipPath><clipPath id="flagUkT"><path d="M30,15h30v15zv15H0zH0V0zV0h30z"/></clipPath><g clip-path="url(#flagUkS)"><path d="M0,0v30h60V0z" fill="#012169"/><path d="M0,0 60,30M60,0 0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 60,30M60,0 0,30" clip-path="url(#flagUkT)" stroke="#C8102E" stroke-width="4"/><path d="M30,0v30M0,15h60" stroke="#fff" stroke-width="10"/><path d="M30,0v30M0,15h60" stroke="#C8102E" stroke-width="6"/></g></svg><svg class="lang-flag" data-lang="fr" viewBox="0 0 3 2" width="20" height="13" aria-hidden="true"><path fill="#002395" d="M0 0h1v2H0z"/><path fill="#fff" d="M1 0h1v2H1z"/><path fill="#ED2939" d="M2 0h1v2H2z"/></svg></button>
+        </div>
         <h1 id="title">Guide des succès</h1>
         <p class="lede" id="lede"></p>
         <div class="stats">
@@ -149,15 +172,25 @@
     </section>
 </div>
 
-<script src="js/i18n-fr.js"></script>
-<script src="js/required.js"></script>
+<script src="js/i18n-fr.js?v={{ site.time | date: '%s' }}"></script>
+<script src="js/required.js?v={{ site.time | date: '%s' }}"></script>
 <script>
 (function () {
     'use strict';
-    var lang = 'en';
-    try { if (localStorage.getItem('er_lang') === 'fr') { lang = 'fr'; } } catch (e) {}
-    if (window.ER_PAGE_LANG) { lang = window.ER_PAGE_LANG; }
+    // same setting as the cheat sheet (js/i18n.js): 'fr' / 'en' in localStorage
+    var stored = null;
+    try { stored = localStorage.getItem('er_lang'); } catch (e) {}
+    var lang = stored === 'fr' || stored === 'en' ? stored : (window.ER_PAGE_LANG || 'en');
     document.documentElement.lang = lang;
+
+    var langBtn = document.getElementById('langToggle');
+    langBtn.setAttribute('data-current', lang);
+    langBtn.title = lang === 'fr' ? 'Switch to English' : 'Passer en français';
+    langBtn.setAttribute('aria-label', langBtn.title);
+    langBtn.addEventListener('click', function () {
+        try { localStorage.setItem('er_lang', lang === 'fr' ? 'en' : 'fr'); } catch (e) {}
+        location.reload();
+    });
 
     var S = {
         fr: {
@@ -260,7 +293,7 @@
     var REQ = window.ER_REQ || {};
     var source = window.ER_EMBED_HTML
         ? Promise.resolve(window.ER_EMBED_HTML)
-        : fetch('index.html').then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.text(); });
+        : fetch('index.html', { cache: 'no-cache' }).then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.text(); });
 
     source.then(build, function () {
         document.getElementById('list').innerHTML = '<p class="empty"></p>';

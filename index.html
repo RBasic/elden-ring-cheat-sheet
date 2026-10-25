@@ -1,3 +1,8 @@
+---
+# Jekyll renders this file only to stamp the asset URLs below with the
+# build time (cache busting); no layout is applied.
+layout: null
+---
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
@@ -7,13 +12,13 @@
     <meta name="description" content="Cheat sheet for Elden Ring. Checklist of things to do, items to get etc.">
     <meta name="author" content="Mitch Winn & RBasic">
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/main.css" rel="stylesheet">
+    <link href="css/main.css?v={{ site.time | date: '%s' }}" rel="stylesheet">
     <script src="js/jquery-3.7.1.min.js"></script>
     <script src="js/jstorage.js"></script>
     <script>var profilesKey = 'elden_ring_profiles';</script>
     <script src="js/bootstrap.min.js"></script>
-    <script src="js/achievements.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/achievements.js?v={{ site.time | date: '%s' }}"></script>
+    <script src="js/main.js?v={{ site.time | date: '%s' }}"></script>
 </head>
 <body class="dark-mode">
     <button type="button" id="tocToggle" aria-controls="tocSidebar" aria-expanded="false">
@@ -1297,9 +1302,9 @@
         </div>
     </div>
 
-    <script src="js/i18n-fr.js"></script>
-    <script src="js/i18n.js"></script>
-    <script src="js/required.js"></script>
-    <script src="js/sidebar.js"></script>
+    <script src="js/i18n-fr.js?v={{ site.time | date: '%s' }}"></script>
+    <script src="js/i18n.js?v={{ site.time | date: '%s' }}"></script>
+    <script src="js/required.js?v={{ site.time | date: '%s' }}"></script>
+    <script src="js/sidebar.js?v={{ site.time | date: '%s' }}"></script>
 </body>
 </html>
