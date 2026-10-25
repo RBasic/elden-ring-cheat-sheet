@@ -402,6 +402,7 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 #erHideDone,
 #erCollapseAll,
 #erBackup,
+#erGuide,
 .er-filebtn,
 .er-chip {
     flex: 0 0 auto;
@@ -418,11 +419,14 @@ body.toc-open #tocToggle .toc-x { display: inline; }
 #erHideDone:hover,
 #erCollapseAll:hover,
 #erBackup:hover,
+#erGuide:hover,
 .er-filebtn:hover,
 .er-chip:hover { color: var(--heading); }
+#erGuide { text-decoration: none; }
 #erHideDone:focus-visible,
 #erCollapseAll:focus-visible,
 #erBackup:focus-visible,
+#erGuide:focus-visible,
 .er-filebtn:focus-within,
 .er-chip:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
 
@@ -497,10 +501,45 @@ body.req-only li[data-id]:not([data-req]):not(.note-warn):not(.choice-head) {
     border-color: rgba(255, 171, 25, 0.5);
 }
 .er-req-badge {
+    position: relative;
+    cursor: help;
     color: var(--done);
     background: color-mix(in srgb, var(--done) 12%, transparent);
     border-color: color-mix(in srgb, var(--done) 50%, transparent);
 }
+/* why the step is required (js/required.js): hover, keyboard focus or tap */
+.er-req-badge[data-why]::after {
+    content: attr(data-why);
+    position: absolute;
+    left: 0;
+    top: calc(100% + 6px);
+    z-index: 20;
+    width: max-content;
+    max-width: min(320px, 80vw);
+    padding: 6px 9px;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.35;
+    text-transform: none;
+    white-space: normal;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid color-mix(in srgb, var(--done) 50%, transparent);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.12s;
+}
+.er-req-badge[data-why]:hover::after,
+.er-req-badge[data-why]:focus-visible::after,
+.er-req-badge[data-why].is-open::after {
+    opacity: 1;
+    visibility: visible;
+}
+.er-req-badge:focus-visible { outline: 2px solid var(--done); outline-offset: 2px; }
 /* keep the tags readable on a completed (struck-through) row */
 label.checkbox > .checkbox-text .er-req-badge,
 label.checkbox > .checkbox-text .er-opt-badge,

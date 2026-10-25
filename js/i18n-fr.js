@@ -114,6 +114,8 @@ window.ER_FR = {
         'Ach. only': 'Succès seuls',
         'Show only the steps needed for the achievements (prerequisites and route included)': 'Afficher seulement les étapes indispensables aux succès (prérequis et trajet compris)',
         'Required': 'Requis',
+        'Achievements guide': 'Guide des succès',
+        'Which steps are required for the achievements, and why': 'Quelles étapes sont indispensables pour les succès, et pourquoi',
         'Needed for the achievements': 'Indispensable pour les succès',
         'Filter by side quest (combine freely)': 'Filtrer par quête secondaire (combinables)',
         'Show or hide the side-quest pills': 'Afficher ou masquer les quêtes secondaires',

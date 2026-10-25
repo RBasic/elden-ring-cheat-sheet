@@ -191,10 +191,15 @@
             li.innerHTML = li.innerHTML.replace(QUALIFIER_RE, '$1' + badges);
             if (isOpt) { li.dataset.optional = ''; optionalCount++; }
         }
-        // data-req (set in index.html): the step is needed for the achievements
-        if (li.hasAttribute('data-req')) {
-            li.innerHTML = li.innerHTML.replace(/^(\s*)/, '$1<span class="er-req-badge" title="' +
-                T('Needed for the achievements') + '">' + T('Required') + '</span> ');
+        // js/required.js: the step is needed for the achievements -> data-req
+        // + a badge whose tooltip says why
+        var why = window.ER_REQ && window.ER_REQ[li.getAttribute('data-id')];
+        if (why) {
+            li.setAttribute('data-req', '');
+            var whyText = (window.ER_LANG === 'fr' ? why[1] : why[0]) || T('Needed for the achievements');
+            var whyAttr = whyText.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            li.innerHTML = li.innerHTML.replace(/^(\s*)/, '$1<span class="er-req-badge" tabindex="0" role="note" ' +
+                'data-why="' + whyAttr + '" aria-label="' + T('Required') + ' : ' + whyAttr + '">' + T('Required') + '</span> ');
         }
         // side-quest pills, after any Required/Optional/Hard badge
         var qp = questPills(li);
@@ -299,6 +304,8 @@
                 'title="' + T('Restore progress from a save file') + '">' + T('Restore') +
                 '<input type="file" id="erImportFile" ' +
                 'accept=".txt,.json,application/json,text/plain"></label>' +
+            '<a id="erGuide" href="succes.html" ' +
+                'title="' + T('Which steps are required for the achievements, and why') + '">' + T('Achievements guide') + '</a>' +
             '<span id="erBackupMsg" role="status"></span>' +
         '</div>' +
         '<div class="er-row er-chips">' +
@@ -810,6 +817,16 @@
         if (!b) { return; }
         e.preventDefault();
         toggleQuest(b.dataset.q);
+    });
+    // "Required" badge: a tap shows why (and must not tick the row's checkbox)
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest('.er-req-badge');
+        pane.querySelectorAll('.er-req-badge.is-open').forEach(function (o) {
+            if (o !== b) { o.classList.remove('is-open'); }
+        });
+        if (!b) { return; }
+        e.preventDefault();
+        b.classList.toggle('is-open');
     });
     questClearBtn.addEventListener('click', function () {
         questFilters.clear();

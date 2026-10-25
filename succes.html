@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Elden Ring – Guide des succès</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="claude:viewport-fit-sides" content="cover">
+    <meta name="description" content="Which Elden Ring cheat sheet steps are required for the achievements, and which are optional.">
+    <!--FONTS-->
+    <style>
+    /* Layout: one reading column — summary, then two tabs (required / optional) listing the steps by region */
+    :root {
+        --bg: #333129;
+        --bg-raised: #3b3931;
+        --text: #f0e6d2;
+        --text-dim: #b3a98f;
+        --heading: #ffd119;
+        --link: #4fc3ff;
+        --done: #45e56d;
+        --warn: #ffab19;
+        --border: rgba(255, 255, 255, 0.09);
+        --stripe: rgba(255, 255, 255, 0.025);
+        --font-display: "Cinzel", "Trajan Pro", Optima, Georgia, serif;
+        --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color-scheme: dark;
+    }
+    @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]) {
+            --bg: #f3ecdd; --bg-raised: #fbf6ec; --text: #2b2419; --text-dim: #665c4b;
+            --heading: #7a5406; --link: #0b5fb0; --done: #2e7d32; --warn: #9a4708;
+            --border: rgba(60, 45, 20, 0.16); --stripe: rgba(60, 45, 20, 0.035);
+            color-scheme: light;
+        }
+    }
+    :root[data-theme="light"] {
+        --bg: #f3ecdd; --bg-raised: #fbf6ec; --text: #2b2419; --text-dim: #665c4b;
+        --heading: #7a5406; --link: #0b5fb0; --done: #2e7d32; --warn: #9a4708;
+        --border: rgba(60, 45, 20, 0.16); --stripe: rgba(60, 45, 20, 0.035);
+        color-scheme: light;
+    }
+    @font-face {
+        font-family: "Cinzel";
+        src: url("fonts/cinzel-latin.woff2") format("woff2");
+        font-weight: 400 800;
+        font-display: swap;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 15px/1.5 var(--font-body);
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        padding-block: 28px 64px;
+    }
+    a { color: var(--link); }
+    .wrap { max-width: 880px; margin: 0 auto; display: grid; gap: 24px; }
+    h1, h2, h3 { font-family: var(--font-display); color: var(--heading); margin: 0; text-wrap: balance; letter-spacing: 0.02em; }
+    h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+    h2 { font-size: 1.15rem; }
+    p { margin: 0; }
+    .back { font-size: 0.9rem; text-decoration: none; }
+    .back:hover { text-decoration: underline; }
+    .lede { color: var(--text-dim); max-width: 68ch; }
+    .stats { display: flex; flex-wrap: wrap; gap: 10px 32px; font-variant-numeric: tabular-nums; }
+    .stat b { display: block; font-family: var(--font-display); font-size: 1.7rem; line-height: 1.1; }
+    .stat span { color: var(--text-dim); font-size: 0.85rem; }
+    .stat.req b { color: var(--done); }
+    .stat.opt b { color: var(--heading); }
+    .keep { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; display: grid; gap: 10px; }
+    .keep ul { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; }
+    .keep li::marker { color: var(--done); }
+    .tools { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: grid; gap: 10px; border-bottom: 1px solid var(--border); }
+    body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tab, .chip {
+        font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--border);
+        background: transparent; color: var(--text-dim);
+    }
+    .tab { padding: 5px 14px; font-weight: 600; }
+    .tab[aria-selected="true"] { color: var(--bg); background: var(--heading); border-color: var(--heading); }
+    .tab[data-tab="req"][aria-selected="true"] { background: var(--done); border-color: var(--done); }
+    .tab small, .chip small { font-weight: 400; opacity: 0.8; margin-left: 5px; font-variant-numeric: tabular-nums; }
+    #q { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-raised); color: var(--text); font: inherit; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { padding: 2px 10px; font-size: 0.82rem; }
+    .chip[aria-pressed="true"] { color: var(--heading); border-color: var(--heading); }
+    .tab:focus-visible, .chip:focus-visible, #q:focus-visible, summary:focus-visible { outline: 2px solid var(--heading); outline-offset: 2px; }
+    .status { color: var(--text-dim); font-size: 0.85rem; }
+    details { border-bottom: 1px solid var(--border); }
+    summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-block: 11px; }
+    summary::-webkit-details-marker { display: none; }
+    summary h3 { font-size: 1rem; }
+    summary h3::before { content: "▸"; display: inline-block; width: 1.1em; color: var(--text-dim); transition: transform 0.15s; }
+    details[open] summary h3::before { transform: rotate(90deg); }
+    summary .n { color: var(--text-dim); font-size: 0.82rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    ol { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 2px; }
+    li.r { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 14px; padding: 7px 10px; border-radius: 6px; }
+    li.r:nth-child(odd) { background: var(--stripe); }
+    li.r .why { font-size: 0.76rem; border-radius: 999px; padding: 1px 9px; align-self: start; max-width: 22rem; text-align: right; }
+    li.r.req .why { color: var(--done); border: 1px solid color-mix(in srgb, var(--done) 45%, transparent); }
+    li.r.opt .why { color: var(--heading); border: 1px solid color-mix(in srgb, var(--heading) 40%, transparent); white-space: nowrap; }
+    li.r .note { grid-column: 1 / -1; color: var(--warn); font-size: 0.83rem; font-style: italic; }
+    .empty, .loading { color: var(--text-dim); font-style: italic; padding: 12px 0; }
+    .sources { color: var(--text-dim); font-size: 0.88rem; display: grid; gap: 6px; }
+    @media (max-width: 600px) {
+        li.r { grid-template-columns: minmax(0, 1fr); }
+        li.r .why, li.r.opt .why { justify-self: start; text-align: left; white-space: normal; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header style="display:grid;gap:10px">
+        <a class="back" href="index.html" id="back">← Retour à l'aide-mémoire</a>
+        <h1 id="title">Guide des succès</h1>
+        <p class="lede" id="lede"></p>
+        <div class="stats">
+            <div class="stat req"><b id="sReq">–</b><span id="lReq"></span></div>
+            <div class="stat opt"><b id="sOpt">–</b><span id="lOpt"></span></div>
+            <div class="stat"><b id="sAll">–</b><span id="lAll"></span></div>
+        </div>
+    </header>
+
+    <section class="keep">
+        <h2 id="keepTitle"></h2>
+        <ul id="keepList"></ul>
+    </section>
+
+    <section class="tools" aria-label="Filtres">
+        <div class="tabs" role="tablist">
+            <button type="button" class="tab" role="tab" data-tab="req" id="tabReq" aria-selected="true"></button>
+            <button type="button" class="tab" role="tab" data-tab="opt" id="tabOpt" aria-selected="false"></button>
+        </div>
+        <input id="q" type="search" autocomplete="off">
+        <div class="chips" id="chips" role="group" hidden></div>
+        <span class="status" id="status"></span>
+    </section>
+
+    <section id="list" aria-live="polite"><p class="loading" id="loading"></p></section>
+
+    <section class="sources">
+        <h2 id="srcTitle"></h2>
+        <p id="srcText"></p>
+    </section>
+</div>
+
+<script src="js/i18n-fr.js"></script>
+<script src="js/required.js"></script>
+<script>
+(function () {
+    'use strict';
+    var lang = 'en';
+    try { if (localStorage.getItem('er_lang') === 'fr') { lang = 'fr'; } } catch (e) {}
+    if (window.ER_PAGE_LANG) { lang = window.ER_PAGE_LANG; }
+    document.documentElement.lang = lang;
+
+    var S = {
+        fr: {
+            title: 'Guide des succès', back: "← Retour à l'aide-mémoire", doc: 'Elden Ring – Guide des succès',
+            lede: "Quelles étapes de l'aide-mémoire sont indispensables pour les 42 succès, et lesquelles tu peux sauter si tu ne vises que le platine. Chaque étape indispensable dit pourquoi.",
+            lReq: 'étapes indispensables', lOpt: 'étapes optionnelles', lAll: 'tâches au total',
+            keepTitle: "Ce qu'il faut garder",
+            keep: [
+                '<strong>Les boss à succès</strong> : les 6 porteurs de fragment, Maliketh, Hoarah Loux, Placidusax et les 23 boss « bronze ».',
+                '<strong>Les 30 objets légendaires</strong> : 9 armes, 6 cendres, 7 sorts, 8 talismans (et ce qui les débloque, comme tuer Greyoll avant d’acheter son Cri).',
+                '<strong>Quête de Ranni</strong> : fin « Âge des étoiles », Espadon de la lune obscure, Lune noire de Ranni.',
+                '<strong>Quête de Fia</strong> pour Fortissax, avec la Marque maudite de Mort (Salle d’étude inversée, grâce à la statue de Ranni).',
+                '<strong>Quête de Millicent</strong> : l’Aiguille de Miquella est le seul moyen de retirer la Flamme exaltée pour faire les autres fins.',
+                '<strong>Accès</strong> : clé de l’Académie, médaillons secrets de l’Arbre-Sacré (Albus et Solcastel).',
+                '<strong>Le reste</strong> : une arme à +25 ou +10, la Flamme exaltée, l’embrasement de l’Arbre-Monde et les 3 fins.'
+            ],
+            tabReq: 'Indispensable', tabOpt: 'Optionnel', search: 'Chercher une étape (ex. Ranni, Manuel, Graine…)',
+            loading: 'Chargement de l’aide-mémoire…', failed: "Impossible de lire l'aide-mémoire (index.html).",
+            empty: 'Aucune étape ne correspond à ce filtre.', of: ' / ', shown: ' affichée(s)',
+            srcTitle: 'Sources et limites',
+            srcText: 'Classement fait ligne par ligne d’après les conditions des succès ; prérequis des quêtes vérifiés sur <a href="https://eldenring.wiki.fextralife.com/Fia" target="_blank" rel="noopener">Fextralife</a>, <a href="https://eldenring.wiki.gg/wiki/Endings" target="_blank" rel="noopener">wiki.gg</a>, <a href="https://www.shacknews.com/article/129601/ranni-the-witch-questline-elden-ring" target="_blank" rel="noopener">Shacknews</a> et la liste des trophées sur <a href="https://www.julsa.fr/elden-ring-liste-et-guide-des-trophees-et-succes/" target="_blank" rel="noopener">JulSa</a>. Les étapes de trajet (sites de grâce, ascenseurs, « aller à… ») sont rangées en optionnel : tu les feras en passant, et d’autres chemins existent parfois.',
+            cats: {
+                route: 'Trajet (à faire en passant)', quest: 'Quête secondaire', loot: 'Objet non requis', boss: 'Boss sans succès',
+                dungeon: 'Donjon sans objet légendaire', cookbook: 'Manuel de recettes', seed: 'Renforce la fiole', map: 'Carte',
+                key: 'Clé-lame de pierre', bell: 'Perle cinéraire', npc: 'PNJ sans succès', tip: 'Conseil (pas une tâche)', other: 'Étape optionnelle'
+            },
+            questOf: 'Quête de ', notes: {
+                playthrough_1_23: 'Garde au moins 1 Clé-lame : les cendres de Larme imitatrice sont derrière un sceau (clés aussi en vente au Bastion).',
+                playthrough_4_5: "Quête de Fia : l'étreinte au Bastion n'est pas exigée pour Fortissax.",
+                playthrough_5_45: 'Quête de Fia : listée par les guides, mais pas présentée comme indispensable pour Fortissax.',
+                playthrough_8_41: 'Quête de Fia : listée par les guides, mais pas présentée comme indispensable pour Fortissax.',
+                playthrough_19_55: 'Le site associe le succès « Gargouilles vaillantes » à cette ligne, mais le trophée correspond au duo de l’aqueduc de Siofra (Nokron).',
+                playthrough_27_28: 'Sans la Flamme exaltée, pas de fin « Seigneur de la Flamme exaltée ».'
+            }
+        },
+        en: {
+            title: 'Achievements guide', back: '← Back to the cheat sheet', doc: 'Elden Ring – Achievements guide',
+            lede: 'Which cheat sheet steps are required for the 42 achievements, and which ones you can skip if you only want the platinum. Every required step says why.',
+            lReq: 'required steps', lOpt: 'optional steps', lAll: 'tasks in total',
+            keepTitle: 'What to keep',
+            keep: [
+                '<strong>Achievement bosses</strong>: the 6 shardbearers, Maliketh, Hoarah Loux, Placidusax and the 23 bronze bosses.',
+                '<strong>The 30 legendary items</strong>: 9 armaments, 6 ashes, 7 spells, 8 talismans (and what unlocks them, e.g. killing Greyoll before buying the Roar).',
+                '<strong>Ranni’s quest</strong>: Age of the Stars ending, Dark Moon Greatsword, Ranni’s Dark Moon.',
+                '<strong>Fia’s quest</strong> for Fortissax, with the Cursemark of Death (inverted Study Hall, thanks to Ranni’s statue).',
+                '<strong>Millicent’s quest</strong>: Miquella’s Needle is the only way to remove the Frenzied Flame and still get the other endings.',
+                '<strong>Access</strong>: Academy key, Haligtree secret medallions (Albus and Castle Sol).',
+                '<strong>The rest</strong>: a weapon at +25 or +10, the Frenzied Flame, the Erdtree Aflame and the 3 endings.'
+            ],
+            tabReq: 'Required', tabOpt: 'Optional', search: 'Search a step (e.g. Ranni, Cookbook, Seed…)',
+            loading: 'Loading the cheat sheet…', failed: 'Could not read the cheat sheet (index.html).',
+            empty: 'No step matches this filter.', of: ' / ', shown: ' shown',
+            srcTitle: 'Sources and limits',
+            srcText: 'Classified row by row from the achievement conditions; quest prerequisites checked on <a href="https://eldenring.wiki.fextralife.com/Fia" target="_blank" rel="noopener">Fextralife</a>, <a href="https://eldenring.wiki.gg/wiki/Endings" target="_blank" rel="noopener">wiki.gg</a>, <a href="https://www.shacknews.com/article/129601/ranni-the-witch-questline-elden-ring" target="_blank" rel="noopener">Shacknews</a>. Route steps (graces, lifts, “go to…”) are listed as optional: you will pass through them anyway, and other paths sometimes exist.',
+            cats: {
+                route: 'Route (on the way)', quest: 'Side quest', loot: 'Item not needed', boss: 'Boss, no achievement',
+                dungeon: 'Dungeon, no legendary item', cookbook: 'Cookbook', seed: 'Flask upgrade', map: 'Map',
+                key: 'Stonesword Key', bell: 'Bell Bearing', npc: 'NPC, no achievement', tip: 'Tip (not a task)', other: 'Optional step'
+            },
+            questOf: 'Quest: ', notes: {
+                playthrough_1_23: 'Keep at least 1 Stonesword Key: the Mimic Tear ashes are behind an imp seal (keys are also sold at Roundtable Hold).',
+                playthrough_19_55: 'The site links the Valiant Gargoyles achievement to this row, but the trophy is for the duo in the Siofra Aqueduct (Nokron).',
+                playthrough_27_28: 'Without the Frenzied Flame, no Lord of Frenzied Flame ending.'
+            }
+        }
+    }[lang];
+
+    var QUEST = { ranni: 'Ranni', varre: 'Varré', roderika: 'Roderika', d: 'D', hyetta: 'Hyetta', irina: 'Irina & Edgar', boc: 'Boc', gurranq: 'Gurranq', thops: 'Thops', kenneth: 'Kenneth', alexander: 'Alexander', jarbairn: lang === 'fr' ? 'Môme-jarre' : 'Jar Bairn', blaidd: 'Blaidd', fia: 'Fia', sellen: 'Sellen', gowry: 'Gowry', corhyn: 'Corhyn', gostoc: 'Gostoc', nepheli: 'Nepheli', seluvis: 'Seluvis', yura: 'Yura', bernahl: 'Bernahl', patches: lang === 'fr' ? 'Pat' : 'Patches', rya: 'Rya', dungeater: lang === 'fr' ? 'Coprophage' : 'Dung Eater', millicent: 'Millicent', boggart: 'Boggart', latenna: 'Latenna', ensha: 'Ensha', rogier: 'Rogier', diallos: 'Diallos', tanith: 'Tanith', gideon: 'Gideon' };
+
+    // optional-step category, from the English text of the row
+    function category(en, quests) {
+        var t = en.replace(/^\(\s*(optional|hard)[^)]*\)\s*/i, '');
+        var side = quests.filter(function (q) { return q !== 'ranni' && q !== 'millicent' && q !== 'fia'; });
+        if (/^(you can stop|stop here|be ready for|don't take the gateway now|dlc|we will|learn more|don't use the door|now that we|we need to make)/i.test(t)) { return ['tip']; }
+        if (/cookbook/i.test(t)) { return ['cookbook']; }
+        if (/map fragment|\bmap\b|area map/i.test(t)) { return ['map']; }
+        if (/golden seed|sacred tear/i.test(t)) { return ['seed']; }
+        if (/stonesword key/i.test(t)) { return ['key']; }
+        if (/bell bearing/i.test(t) && /^(loot|buy|get|find)/i.test(t)) { return ['bell']; }
+        if (/site of grace|^(teleport|go |go$|return|continue|take the|take an|take another|activate|rest at|reach|unlock|find a way|find the (secret )?path|follow|navigate|keep going|run with|use the|cross|jump|turn back|enter|up the ladder|pull the|open shortcut|kick the)/i.test(t) && !side.length) { return ['route']; }
+        if (side.length) { return ['quest', side.map(function (q) { return QUEST[q] || q; }).join(' / ')]; }
+        if (/^(defeat|kill|fight)/i.test(t)) { return ['boss']; }
+        if (/^(complete|finish|solve)/i.test(t)) { return ['dungeon']; }
+        if (/^(loot|find|buy|obtain|get|collect|grab|pick up)/i.test(t)) { return ['loot']; }
+        if (/^(talk|speak|meet|exhaust|give|report|agree|listen|do the|help|convince|invade|get invaded|let)/i.test(t)) { return ['npc']; }
+        return ['other'];
+    }
+
+    document.title = S.doc;
+    ['title', 'back', 'lede', 'lReq', 'lOpt', 'lAll', 'keepTitle', 'srcTitle', 'loading'].forEach(function (k) {
+        var el = document.getElementById(k); if (el) { el.textContent = S[k]; }
+    });
+    document.getElementById('srcText').innerHTML = S.srcText;
+    document.getElementById('keepList').innerHTML = S.keep.map(function (h) { return '<li>' + h + '</li>'; }).join('');
+    var qEl = document.getElementById('q');
+    qEl.placeholder = S.search;
+    qEl.setAttribute('aria-label', S.search);
+
+    var FR = window.ER_FR || { items: {}, regions: {} };
+    var REQ = window.ER_REQ || {};
+    var source = window.ER_EMBED_HTML
+        ? Promise.resolve(window.ER_EMBED_HTML)
+        : fetch('index.html').then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.text(); });
+
+    source.then(build, function () {
+        document.getElementById('list').innerHTML = '<p class="empty"></p>';
+        document.querySelector('#list .empty').textContent = S.failed;
+    });
+
+    function build(html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var pane = doc.getElementById('tabPlaythrough');
+        var order = Array.prototype.map.call(doc.querySelectorAll('#tocSidebar a[href^="#"]'), function (a) { return a.getAttribute('href').slice(1); });
+        var regions = [];
+        Array.prototype.forEach.call(pane.querySelectorAll('h3[id]'), function (h3) {
+            var name = (h3.firstChild && h3.firstChild.nodeType === 3 ? h3.firstChild.nodeValue : h3.textContent).trim();
+            var reg = { id: h3.id, name: lang === 'fr' ? (FR.regions[h3.id] || name) : name, rows: [] };
+            var el = h3.nextElementSibling;
+            while (el && el.tagName !== 'H3') {
+                Array.prototype.forEach.call(el.querySelectorAll ? el.querySelectorAll('li[data-id]') : [], function (li) {
+                    if (li.classList.contains('note') || li.classList.contains('choice-head') || li.classList.contains('note-head')) { return; }
+                    var id = li.getAttribute('data-id');
+                    var en = li.textContent.replace(/\s+/g, ' ').trim();
+                    var text = lang === 'fr' && FR.items[id] ? FR.items[id].replace(/[{}]/g, '') : en;
+                    var quests = (li.getAttribute('data-quest') || '').split(/\s+/).filter(Boolean);
+                    var why = REQ[id];
+                    var row = { id: id, text: text, en: en, req: !!why, note: S.notes[id] || '' };
+                    if (why) { row.why = lang === 'fr' ? why[1] : why[0]; }
+                    else { var c = category(en, quests); row.cat = c[0]; row.catLabel = c[0] === 'quest' ? S.questOf + c[1] : S.cats[c[0]]; }
+                    reg.rows.push(row);
+                });
+                el = el.nextElementSibling;
+            }
+            if (reg.rows.length) { regions.push(reg); }
+        });
+        regions.sort(function (a, b) { return order.indexOf(a.id) - order.indexOf(b.id); });
+        render(regions);
+    }
+
+    function render(regions) {
+        var all = [];
+        regions.forEach(function (r) { all = all.concat(r.rows); });
+        var nReq = all.filter(function (x) { return x.req; }).length;
+        document.getElementById('sReq').textContent = nReq;
+        document.getElementById('sOpt').textContent = all.length - nReq;
+        document.getElementById('sAll').textContent = all.length;
+        var tabReq = document.getElementById('tabReq'), tabOpt = document.getElementById('tabOpt');
+        tabReq.innerHTML = ''; tabReq.append(S.tabReq); tabReq.appendChild(small(nReq));
+        tabOpt.innerHTML = ''; tabOpt.append(S.tabOpt); tabOpt.appendChild(small(all.length - nReq));
+
+        var chipsEl = document.getElementById('chips');
+        var counts = {};
+        all.forEach(function (x) { if (!x.req) { counts[x.cat] = (counts[x.cat] || 0) + 1; } });
+        var active = new Set();
+        Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).forEach(function (c) {
+            var b = document.createElement('button');
+            b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', 'false');
+            b.append(S.cats[c]); b.appendChild(small(counts[c]));
+            b.addEventListener('click', function () {
+                if (active.has(c)) { active.delete(c); } else { active.add(c); }
+                b.setAttribute('aria-pressed', active.has(c) ? 'true' : 'false');
+                draw();
+            });
+            chipsEl.appendChild(b);
+        });
+
+        var tab = 'req';
+        try { if (location.hash === '#optionnel' || location.hash === '#optional') { tab = 'opt'; } } catch (e) {}
+        [tabReq, tabOpt].forEach(function (t) {
+            t.addEventListener('click', function () { tab = t.dataset.tab; draw(); });
+        });
+        qEl.addEventListener('input', draw);
+        var listEl = document.getElementById('list');
+        var openState = {};
+
+        function norm(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+        function draw() {
+            tabReq.setAttribute('aria-selected', tab === 'req' ? 'true' : 'false');
+            tabOpt.setAttribute('aria-selected', tab === 'opt' ? 'true' : 'false');
+            chipsEl.hidden = tab !== 'opt';
+            var q = norm(qEl.value.trim());
+            var shown = 0;
+            listEl.textContent = '';
+            regions.forEach(function (reg) {
+                var items = reg.rows.filter(function (x) {
+                    if ((tab === 'req') !== x.req) { return false; }
+                    if (tab === 'opt' && active.size && !active.has(x.cat)) { return false; }
+                    if (q && norm(x.text + ' ' + x.en + ' ' + (x.why || x.catLabel)).indexOf(q) < 0) { return false; }
+                    return true;
+                });
+                if (!items.length) { return; }
+                shown += items.length;
+                var key = tab + ':' + reg.id;
+                var d = document.createElement('details');
+                d.open = key in openState ? openState[key] : (tab === 'req' || !!q || active.size > 0);
+                d.addEventListener('toggle', function () { openState[key] = d.open; });
+                var sm = document.createElement('summary');
+                var h = document.createElement('h3'); h.textContent = reg.name;
+                var n = document.createElement('span'); n.className = 'n';
+                n.textContent = items.length + S.of + reg.rows.length;
+                sm.appendChild(h); sm.appendChild(n); d.appendChild(sm);
+                var ol = document.createElement('ol');
+                items.forEach(function (x) {
+                    var li = document.createElement('li'); li.className = 'r ' + (x.req ? 'req' : 'opt');
+                    var t = document.createElement('span'); t.textContent = x.text; if (lang === 'fr') { t.title = x.en; }
+                    var w = document.createElement('span'); w.className = 'why'; w.textContent = x.req ? x.why : x.catLabel;
+                    li.appendChild(t); li.appendChild(w);
+                    if (x.note) { var nt = document.createElement('span'); nt.className = 'note'; nt.textContent = x.note; li.appendChild(nt); }
+                    ol.appendChild(li);
+                });
+                d.appendChild(ol);
+                listEl.appendChild(d);
+            });
+            if (!shown) { var e = document.createElement('p'); e.className = 'empty'; e.textContent = S.empty; listEl.appendChild(e); }
+            document.getElementById('status').textContent = shown + S.shown;
+        }
+        draw();
+    }
+    function small(n) { var s = document.createElement('small'); s.textContent = n; return s; }
+})();
+</script>
+</body>
+</html>
