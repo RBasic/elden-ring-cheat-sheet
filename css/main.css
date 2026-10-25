@@ -329,6 +329,8 @@ p { color: var(--text); }
 /* top row wraps: progress + % share line 1, the filter drops to line 2
    until there is room to sit inline (>= 900px) */
 #erToolbar .er-row-top { flex-wrap: wrap; }
+/* the filter chips wrap on wide screens (phones scroll them sideways, below) */
+.er-chips { flex-wrap: wrap; row-gap: 0.4rem; }
 
 #tocToggle {
     flex: 0 0 auto;
@@ -462,7 +464,15 @@ body.ach-only li[data-id]:not([data-ach]):not(.note):not(.choice-head):not(.choi
     display: none !important;
 }
 
-/* the "OPTIONAL" / "HARD" tags that replace the leading "(…)" text */
+/* "Required": show just the steps needed for the achievements (+ ⚠ warnings) */
+.er-chip-req { margin-left: 0.35rem; }
+body.req-only li[data-id]:not([data-req]):not(.note-warn):not(.choice-head) {
+    display: none !important;
+}
+
+/* the "OPTIONAL" / "HARD" tags that replace the leading "(…)" text,
+   and the "REQUIRED" tag on data-req rows */
+.er-req-badge,
 .er-opt-badge,
 .er-hard-badge {
     display: inline-block;
@@ -486,7 +496,13 @@ body.ach-only li[data-id]:not([data-ach]):not(.note):not(.choice-head):not(.choi
     background: rgba(255, 171, 25, 0.12);
     border-color: rgba(255, 171, 25, 0.5);
 }
+.er-req-badge {
+    color: var(--done);
+    background: color-mix(in srgb, var(--done) 12%, transparent);
+    border-color: color-mix(in srgb, var(--done) 50%, transparent);
+}
 /* keep the tags readable on a completed (struck-through) row */
+label.checkbox > .checkbox-text .er-req-badge,
 label.checkbox > .checkbox-text .er-opt-badge,
 label.checkbox > .checkbox-text .er-hard-badge,
 label.checkbox > .checkbox-text .er-quest-badge { text-decoration: none; }

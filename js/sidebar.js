@@ -191,10 +191,15 @@
             li.innerHTML = li.innerHTML.replace(QUALIFIER_RE, '$1' + badges);
             if (isOpt) { li.dataset.optional = ''; optionalCount++; }
         }
-        // side-quest pills, after any Optional/Hard badge
+        // data-req (set in index.html): the step is needed for the achievements
+        if (li.hasAttribute('data-req')) {
+            li.innerHTML = li.innerHTML.replace(/^(\s*)/, '$1<span class="er-req-badge" title="' +
+                T('Needed for the achievements') + '">' + T('Required') + '</span> ');
+        }
+        // side-quest pills, after any Required/Optional/Hard badge
         var qp = questPills(li);
         if (qp) {
-            var m = li.innerHTML.match(/^\s*(?:<span class="er-(?:opt|hard)-badge">.*?<\/span>\s*)*/);
+            var m = li.innerHTML.match(/^\s*(?:<span class="er-(?:req|opt|hard)-badge"[^>]*>.*?<\/span>\s*)*/);
             var pre = m ? m[0] : '';
             li.innerHTML = pre + qp + li.innerHTML.slice(pre.length);
         }
@@ -309,7 +314,9 @@
             '<button type="button" class="er-chip er-chip-opt" id="erOptional" aria-pressed="false" ' +
                 'title="' + T('Hide the (Optional) steps and drop them from the totals') + '">' + T('Optional') + '</button>' +
             '<button type="button" class="er-chip er-chip-ach" id="erAchOnly" aria-pressed="false" ' +
-                'title="' + T('Show only the steps needed for achievements') + '">' + T('Ach. only') + '</button>' +
+                'title="' + T('Show only the steps that unlock an achievement') + '">' + T('Ach. only') + '</button>' +
+            '<button type="button" class="er-chip er-chip-req" id="erReqOnly" aria-pressed="false" ' +
+                'title="' + T('Show only the steps needed for the achievements (prerequisites and route included)') + '">' + T('Required') + '</button>' +
         '</div>' +
         '<div class="er-quests-wrap is-collapsed" id="erQuestsWrap">' +
             '<div class="er-quests-inner">' +
@@ -517,15 +524,22 @@
     achChipN.textContent = achCount;
     achOnlyBtn.appendChild(achChipN);
 
+    var reqOnlyBtn = document.getElementById('erReqOnly');
+    var reqChipN = document.createElement('span');
+    reqChipN.className = 'er-chip-n';
+    reqChipN.textContent = pane.querySelectorAll('li[data-id][data-req]').length;
+    reqOnlyBtn.appendChild(reqChipN);
+
     function hideDoneOn() { return hideDoneBtn.getAttribute('aria-pressed') === 'true'; }
     function optionalHidden() { return optionalBtn.getAttribute('aria-pressed') === 'true'; }
     function achOnly() { return achOnlyBtn.getAttribute('aria-pressed') === 'true'; }
+    function reqOnly() { return reqOnlyBtn.getAttribute('aria-pressed') === 'true'; }
 
     // "All" volume badge: mirror the live progress count while a
     // count-changing filter is on, else the plain base total
     function syncAllBadge() {
         if (!allChipN) { return; }
-        allChipN.textContent = (achOnly() || optionalHidden())
+        allChipN.textContent = (achOnly() || reqOnly() || optionalHidden())
             ? (overallSpanEl.getAttribute('data-count') || String(typeCounts['']))
             : String(typeCounts['']);
     }
@@ -545,12 +559,21 @@
         try { localStorage.setItem(ACH_KEY, state ? '1' : '0'); } catch (e) {}
     }
 
+    var REQ_KEY = 'er_req_only';
+    function setReqOnly(state) {
+        reqOnlyBtn.setAttribute('aria-pressed', state ? 'true' : 'false');
+        reqOnlyBtn.classList.toggle('is-on', state);
+        body.classList.toggle('req-only', state);
+        try { localStorage.setItem(REQ_KEY, state ? '1' : '0'); } catch (e) {}
+    }
+
     // restore persisted state before the first paint / first count
     (function () {
-        var o, a;
-        try { o = localStorage.getItem(OPT_KEY); a = localStorage.getItem(ACH_KEY); } catch (e) {}
+        var o, a, r;
+        try { o = localStorage.getItem(OPT_KEY); a = localStorage.getItem(ACH_KEY); r = localStorage.getItem(REQ_KEY); } catch (e) {}
         if (o === '1') { setOptionalHidden(true); }
         if (a === '1') { setAchOnly(true); }
+        if (r === '1') { setReqOnly(true); }
     })();
 
     optionalBtn.addEventListener('click', function () {
@@ -561,6 +584,12 @@
     });
     achOnlyBtn.addEventListener('click', function () {
         setAchOnly(!achOnly());
+        applyFilter();
+        if (window.erRecalcTotals) { window.erRecalcTotals(); }
+        syncAllBadge();
+    });
+    reqOnlyBtn.addEventListener('click', function () {
+        setReqOnly(!reqOnly());
         applyFilter();
         if (window.erRecalcTotals) { window.erRecalcTotals(); }
         syncAllBadge();
@@ -618,9 +647,10 @@
         var hideDone = hideDoneOn();
         var hideOpt = optionalHidden();
         var achMode = achOnly();
+        var reqMode = reqOnly();
         var typeOn = typeFilters.size;
         var questOn = questFilters.size;
-        var anyActive = !!term || hideDone || !!typeOn || hideOpt || achMode || !!questOn;
+        var anyActive = !!term || hideDone || !!typeOn || hideOpt || achMode || reqMode || !!questOn;
         // text search, a category chip or a side-quest pick force-opens the regions
         var forceOpen = !!term || !!typeOn || !!questOn;
         body.classList.toggle('er-filtering', forceOpen);
@@ -644,8 +674,10 @@
                 var achOut = achMode && !li.hasAttribute('data-ach') &&
                     !li.classList.contains('note') && !li.classList.contains('choice-head') &&
                     !li.classList.contains('choice');
+                var reqOut = reqMode && !li.hasAttribute('data-req') &&
+                    !li.classList.contains('note-warn') && !li.classList.contains('choice-head');
                 var matchQuest = !questOn || liMatchesQuest(li);
-                var show = matchText && matchType && matchQuest && !(hideDone && done) && !optOut && !achOut;
+                var show = matchText && matchType && matchQuest && !(hideDone && done) && !optOut && !achOut && !reqOut;
                 li.hidden = !show;
                 if (show) { visible++; }
             });

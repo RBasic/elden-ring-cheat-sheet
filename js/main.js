@@ -161,6 +161,8 @@
         var hideOptional = document.body.classList.contains('hide-optional');
         // "Achievements only": count only rows flagged data-ach
         var achOnly = document.body.classList.contains('ach-only');
+        // "Required": count only rows flagged data-req
+        var reqOnly = document.body.classList.contains('req-only');
         $('[id$="_overall_total"]').each(function(index) {
             var type = this.id.match(/(.*)_overall_total/)[1];
             var overallCount = 0, overallChecked = 0;
@@ -184,6 +186,9 @@
                     }
                     if (achOnly && !this.hasAttribute('data-ach') && !li.hasClass('choice')) {
                         return;   // Achievements-only: this row isn't shown, don't count it
+                    }
+                    if (reqOnly && !this.hasAttribute('data-req')) {
+                        return;   // Required filter on: this row isn't shown, don't count it
                     }
                     if (hideOptional && this.hasAttribute('data-optional')) {
                         return;   // Optional filter on: this row isn't shown, don't count it
