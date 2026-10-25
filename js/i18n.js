@@ -19,8 +19,10 @@
 
     var langBtn = document.getElementById('langToggle');
     if (langBtn) {
-        langBtn.textContent = lang === 'fr' ? 'EN' : 'FR';
+        // both flags are in the button; the current language's one is lit
+        langBtn.setAttribute('data-current', lang);
         langBtn.title = lang === 'fr' ? 'Switch to English' : 'Passer en français';
+        langBtn.setAttribute('aria-label', langBtn.title);
         langBtn.addEventListener('click', function () {
             try { localStorage.setItem(KEY, lang === 'fr' ? 'en' : 'fr'); } catch (e) {}
             location.reload();

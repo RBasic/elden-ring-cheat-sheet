@@ -275,6 +275,33 @@ p { color: var(--text); }
     border-color: var(--danger);
 }
 
+/* FR / EN switch (js/i18n.js): both flags shown, the current one lit */
+#langToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    vertical-align: top;
+}
+#langToggle .lang-flag {
+    display: block;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .35);
+    opacity: .35;
+    filter: grayscale(.6);
+    transition: opacity .15s, filter .15s;
+}
+#langToggle:not([data-current]) .lang-flag[data-lang="en"],
+#langToggle[data-current="en"] .lang-flag[data-lang="en"],
+#langToggle[data-current="fr"] .lang-flag[data-lang="fr"] {
+    opacity: 1;
+    filter: none;
+}
+#langToggle:hover .lang-flag,
+#langToggle:focus-visible .lang-flag {
+    opacity: 1;
+    filter: none;
+}
+
 /* ----- sticky toolbar ------------------------------------------------- */
 
 /* Bootstrap sets .tab-content{overflow:auto} which breaks position:sticky */
